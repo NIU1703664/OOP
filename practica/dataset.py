@@ -1,13 +1,14 @@
-from typing import Self
+from typing import Self, TypeVar, Generic
 import math
 import numpy as np
 import numpy.typing as npt
+Label = TypeVar("Label", bound=np.generic, covariant=True)
 
-class Dataset:
-    def __init__ (self, X:npt.NDArray[np.float64], y:npt.NDArray[np.float64]):
+class Dataset(Generic[Label]):
+    def __init__ (self, X: npt.NDArray[np.float64], y: npt.NDArray[Label]):
         self.X: npt.NDArray[np.float64] = X;
         assert self.X.ndim == 2;
-        self.y: npt.NDArray[np.float64] = y;
+        self.y: npt.NDArray[Label] = y;
         assert self.X.ndim == 1;
         self.num_samples: int
         self.num_features: int
@@ -18,16 +19,17 @@ class Dataset:
         indexes: list[int]= list(np.random.choice(range(0,n),int(n*ratio_samples), replace =True));
         return type(self)( np.array([self.X[i] for i in indexes]), np.array([self.y[i] for i in indexes]))
 
-    def most_frequent_label(self) -> np.float64:
+    def most_frequent_label(self) -> Label:
         values, counts = np.unique(self.y, return_counts=True)
         ind = np.argmax(counts)
-        return values[ind]
+        ret: Label = values[ind]
+        return ret
 
-    def split(self, feature_index: int, value: np.float64) -> tuple[Self, Self]:
+    def split(self, feature_index: np.int64, value: np.float64) -> tuple[Self, Self]:
         left_X: list[list[np.float64]] = []
-        left_y: npt.NDArray[np.float64] = np.array([])
+        left_y: npt.NDArray[Label] = np.array([])
         right_X: list[list[np.float64]] = []
-        right_y: npt.NDArray[np.float64] = np.array([])
+        right_y: npt.NDArray[Label] = np.array([])
         for i in range(self.num_samples):
             if self.X[feature_index] < value:
                 left_X[i] = self.X[i]
