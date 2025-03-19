@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Generic
+from typing import Callable, Generic
 from numpy.typing import NDArray
 from .decisionTree import Leaf, Parent, Node
 from .dataset import Dataset, Label
@@ -11,7 +11,7 @@ class Forest (Generic[Label]):
         self.max_depth: int = max_depth
         self.ratio_samples: float = ratio_samples
         self.num_random_features: int = num_random_features
-        self.criterion: str = criterion
+        self.criterion: str = '_'+criterion
         self.decision_trees: list[Node[Label]] = []
 
     def predict(self, x: list[float]) -> Label:
@@ -85,9 +85,9 @@ class Forest (Generic[Label]):
         return node
 
 
-    def _best_split(self, idx_features: NDArray[np.int64], dataset: Dataset[Label]) -> tuple[np.int64, np.float64, float, list[Dataset[Label]]]: # find the best pair (feature, threshold) by exploring all possible pairs
+    def _best_split(self, idx_features: NDArray[np.int64], dataset: Dataset[Label]) -> tuple[np.int64, np.float64, np.float64, list[Dataset[Label]]]: # find the best pair (feature, threshold) by exploring all possible pairs
         int_max = np.int64(np.iinfo(np.int64).max)
-        best_feature_index, best_threshold, minimum_cost = int_max, np.float64(np.inf), np.inf
+        best_feature_index, best_threshold, minimum_cost = int_max, np.float64(np.inf), np.float64(np.inf)
         best_split: list[Dataset[Label]] | None = None
         idx: np.int64
         for idx in idx_features:
@@ -105,14 +105,20 @@ class Forest (Generic[Label]):
         return best_feature_index, best_threshold, minimum_cost, best_split
 
 
-    def _CART_cost(self, left_dataset: Dataset[Label], right_dataset: Dataset[Label]) -> float:
+    def _CART_cost(self, left_dataset: Dataset[Label], right_dataset: Dataset[Label]) -> np.float64:
     # the J(k,v) equation in the slides, using Gini
         left_len = left_dataset.num_samples
         right_len = right_dataset.num_samples
+        critereon: Callable[[Dataset[Label]], np.float64] = getattr(Forest, self.criterion)
 
-        return left_len / (left_len + right_len) * self._gini(left_dataset) + right_len / (left_len + right_len) * self._gini(right_dataset)
+        return left_len / (left_len + right_len) * critereon(left_dataset) + right_len / (left_len + right_len) * critereon(right_dataset)
 
-    def _gini(self, dataset: Dataset[Label]) -> float:
+    def _gini(self, dataset: Dataset[Label]) -> np.float64:
         counts = np.bincount(dataset.y)
         probs = counts / dataset.num_samples
         return 1 - np.sum(probs**2)
+
+    def _entropy(self, dataset: Dataset[Label])-> np.float64:
+        counts = np.bincount(dataset.y)
+        probs = counts / dataset.num_samples
+        return - np.sum(probs*np.log(probs))

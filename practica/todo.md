@@ -6,7 +6,7 @@
 - [ ] Logging and Comments
 - [ ] Give dataset full responsibility
 
-- [ ] Add entropy
+- [x] Add entropy
 
 - [ ] Precision metrics
 - [ ] MNIST is fairly accurate
