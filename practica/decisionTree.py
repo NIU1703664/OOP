@@ -17,10 +17,10 @@ class Leaf(Node[Label]):
         return self.label
 
 class Parent(Node[Label]):
-    def __init__(self, k_index: np.int64, v:float) -> None:
+    def __init__(self, k_index: np.int64, v:np.float64) -> None:
         super().__init__()
         self.feature_index: np.int64 = k_index
-        self.threshold: float = v
+        self.threshold: np.float64 = v
         self.left_child: Node[Label]
         self.right_child: Node[Label]
     @override
