@@ -1,14 +1,13 @@
 # TO DO
 
 ## Milestone 1
-- [ ] Import data
-- [ ] Draw UML
-- [ ] Logging and Comments
-- [ ] Give dataset full responsibility
+- [ ] Draw UML - Eric
+- [ ] Logging and Comments - Eric
+- [ ] Give dataset full responsibility - Kai
 
-- [x] Add entropy
+- [x] Add entropy - Kai
 
-- [ ] Precision metrics
+- [ ] Precision metrics - Daniel 
 - [ ] MNIST is fairly accurate
 
 - [ ] Multiprocessing (parallelism)
