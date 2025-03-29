@@ -1,0 +1,42 @@
+@startuml
+'https://plantuml.com/class-diagram
+skinparam classAttributeIconSize 0
+
+class Body {
+    {static} G : float
+    - _position : float[2]
+    - _velocity : float[2]
+    - _mass : float
+    + Body(pos : float[2], vel : float[2], mass : float)
+    + force_from(another_body : Body) : float[2]
+    + move(force : float[2], dt : float) : void
+}
+
+class Universe {
+    - _radius : float
+    - _name : String
+    - _num_bodies : int
+    - _bodies : Body[]
+    + Universe(bodies : Body[], radius : float, name : String)
+    + from_file(filename : String) : Universe
+    + nplus1(n : int) : Universe
+    + get_body_position(idx_body : int) : float[2]
+    + update(dt : float) : void
+    - _compute_forces() : float[][2]
+}
+
+note bottom of Universe
+bodies is an attribute of type Body[]
+end note
+
+class NBodySimulator {
+    - window_size : int
+    - screen : pygame.Surface
+    + NBodySimulator(universe : Universe, window_size : int)
+    + simulate(time_step : float, trace : bool) : void
+    - _draw_bodies(color : float[3], size: float) : void
+}
+
+NBodySimulator *--right--> "1" Universe : "universe"
+Universe *--right--> "1..*" Body : "bodies"
+@enduml
