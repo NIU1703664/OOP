@@ -2,7 +2,12 @@ from typing import Self, TypeVar, Generic
 import math
 import numpy as np
 import numpy.typing as npt
+import logging
 Label = TypeVar("Label", bound=np.generic, covariant=True)
+
+# Configurate the logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class Dataset(Generic[Label]):
     def __init__ (self, X: npt.NDArray[np.float64], y: npt.NDArray[Label]):

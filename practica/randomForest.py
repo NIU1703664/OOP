@@ -3,6 +3,7 @@ from typing import Callable, Generic
 from numpy.typing import NDArray
 from .decisionTree import Leaf, Parent, Node
 from .dataset import Dataset, Label
+import logging
 
 class Forest (Generic[Label]):
     def __init__(self, num_trees: int, min_size: int, max_depth: int, ratio_samples: float, num_random_features: int, criterion: str) -> None:
@@ -13,8 +14,10 @@ class Forest (Generic[Label]):
         self.num_random_features: int = num_random_features
         self.criterion: str = '_'+criterion
         self.decision_trees: list[Node[Label]] = []
+        logging.info(f"Starting a Random Forest with {num_trees} trees"}
 
     def predict(self, x: list[float]) -> Label:
+        logging.debug(f"Making prediction for the entrance: {x}")
         labels: dict[Label, int] = dict()
         max_value = 0
         max_label: Label | None = None
@@ -30,6 +33,7 @@ class Forest (Generic[Label]):
                 max_label = predict
 
         if max_label == None:
+            logging.error("Forest hasn''t been fit yet)
             raise Exception("Forest hasn''t been fit yet")
 
         return max_label
@@ -37,21 +41,26 @@ class Forest (Generic[Label]):
 
     def fit(self, X: NDArray[np.float64], y: NDArray[Label]):
 # a pair (X,y) is a dataset, with its own responsibilities
+        logging.info("Starting the training of the Random Forest")
         dataset = Dataset(X,y)
         self._make_decision_trees(dataset)
+        logging.info("Training finished")
         
 
     def _make_decision_trees(self, dataset: Dataset[Label]):
         self.decision_trees = []
+        logging.info(f"making {self.num_trees} decision trees")
         for _ in range(self.num_trees):
 # sample a subset of the dataset with replacement using
 # np.random.choice() to get the indices of rows in X and y
             subset = dataset.random_sampling(self.ratio_samples)
             tree = self._make_node(subset,1) # the root of the decision tree
             self.decision_trees.append(tree)
+            logging.debug(f"Tree {i+1} created")
 
 
     def _make_node(self, dataset: Dataset[Label], depth: int) -> Node[Label]:
+        logging.debug(f"Creating node in depth {depth} with {dataset.num_samples} samples")
         if depth == self.max_depth or dataset.num_samples <= self.min_size or len(np.unique(dataset.y)) == 1:
 # last condition is true if all samples belong to the same class
             node = self._make_leaf(dataset)
@@ -62,6 +71,7 @@ class Forest (Generic[Label]):
 
     def _make_leaf(self, dataset: Dataset[Label]) -> Leaf[Label]:
         # label = most frequent class in dataset
+        logging.info(f"Creating a leaf with label {label}")
         return Leaf(dataset.most_frequent_label())
 
 
