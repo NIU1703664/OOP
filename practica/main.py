@@ -1,12 +1,14 @@
 from .randomForest import Forest
 import numpy as np
 import sys
+import logging
 
 def main():
+    logging.info("Starting the program")
     if len(sys.argv) == 0:
-        print("This program requires an argument")
+        logging.error("This program requires an argument")
         return
-        #LOGGING
+        
     dataset = sys.argv[0];
     
     y: list[str] =[]
@@ -25,8 +27,8 @@ def main():
             try:
                 dX.append([float(param) for param in fields[:-1]])
             except:
-                #Logging
-                print("Couldn't read file, check formatting")
+                logging.error("Couldn't read file, check formatting"
+
         f.close()
     
     # Hyperparameters
@@ -37,5 +39,6 @@ def main():
     num_random_features = int(np.sqrt(num_features))
     criterion = 'gini'
     
+    logging.info("Creating the Random Forest")
     forest = Forest(num_trees, max_depth, min_size_split, ratio_samples, num_random_features, criterion)
-    
+    logging.info("Random Forest created")
