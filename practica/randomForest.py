@@ -1,8 +1,9 @@
 import numpy as np
-from typing import Callable, Generic
+from typing import Generic
 from numpy.typing import NDArray
 from .decisionTree import Leaf, Parent, Node
 from .dataset import Dataset, Label
+from .measure import Impurity
 import logging
 
 class Forest (Generic[Label]):
@@ -12,9 +13,9 @@ class Forest (Generic[Label]):
         self.max_depth: int = max_depth
         self.ratio_samples: float = ratio_samples
         self.num_random_features: int = num_random_features
-        self.criterion: str = '_'+criterion
+        self.criterion: str = criterion
         self.decision_trees: list[Node[Label]] = []
-        logging.info(f"Starting a Random Forest with {num_trees} trees"}
+        logging.info(f"Starting a Random Forest with {num_trees} trees")
 
     def predict(self, x: list[float]) -> Label:
         logging.debug(f"Making prediction for the entrance: {x}")
@@ -33,7 +34,7 @@ class Forest (Generic[Label]):
                 max_label = predict
 
         if max_label == None:
-            logging.error("Forest hasn''t been fit yet)
+            logging.error("Forest hasn''t been fit yet")
             raise Exception("Forest hasn''t been fit yet")
 
         return max_label
@@ -50,7 +51,7 @@ class Forest (Generic[Label]):
     def _make_decision_trees(self, dataset: Dataset[Label]):
         self.decision_trees = []
         logging.info(f"making {self.num_trees} decision trees")
-        for _ in range(self.num_trees):
+        for i in range(self.num_trees):
 # sample a subset of the dataset with replacement using
 # np.random.choice() to get the indices of rows in X and y
             subset = dataset.random_sampling(self.ratio_samples)
@@ -71,8 +72,9 @@ class Forest (Generic[Label]):
 
     def _make_leaf(self, dataset: Dataset[Label]) -> Leaf[Label]:
         # label = most frequent class in dataset
+        label = dataset.most_frequent_label()
         logging.info(f"Creating a leaf with label {label}")
-        return Leaf(dataset.most_frequent_label())
+        return Leaf(label)
 
 
     def _make_parent_or_leaf(self, dataset: Dataset[Label], depth: int) -> Node[Label]:
@@ -117,18 +119,8 @@ class Forest (Generic[Label]):
 
     def _CART_cost(self, left_dataset: Dataset[Label], right_dataset: Dataset[Label]) -> np.float64:
     # the J(k,v) equation in the slides, using Gini
-        left_len = left_dataset.num_samples
-        right_len = right_dataset.num_samples
-        critereon: Callable[[Dataset[Label]], np.float64] = getattr(Forest, self.criterion)
+        left_len = np.float64(left_dataset.num_samples)
+        right_len = np.float64(right_dataset.num_samples)
+        critereon: Impurity = self.criterion
 
-        return left_len / (left_len + right_len) * critereon(left_dataset) + right_len / (left_len + right_len) * critereon(right_dataset)
-
-    def _gini(self, dataset: Dataset[Label]) -> np.float64:
-        counts = np.bincount(dataset.y)
-        probs = counts / dataset.num_samples
-        return 1 - np.sum(probs**2)
-
-    def _entropy(self, dataset: Dataset[Label])-> np.float64:
-        counts = np.bincount(dataset.y)
-        probs = counts / dataset.num_samples
-        return - np.sum(probs*np.log(probs))
+        return left_len / (left_len + right_len) * critereon.purity(left_dataset) + right_len / (left_len + right_len) * critereon.purity(right_dataset)

@@ -6,7 +6,7 @@
 - [ ] Give dataset full responsibility - Kai
 
 - [x] Add entropy - Kai
-- [ ] Move entropy and gini to different class - Kai
+- [x] Move entropy and gini to different class - Kai
 
 - [ ] Precision metrics - Daniel 
 - [ ] MNIST is fairly accurate
