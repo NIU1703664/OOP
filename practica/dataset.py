@@ -1,6 +1,8 @@
 from typing import Self, TypeVar, Generic
 import math
 import numpy as np
+import pandas as pd
+import sklearn.datasets
 import numpy.typing as npt
 import logging
 Label = TypeVar("Label", bound=np.generic, covariant=True)
@@ -43,3 +45,15 @@ class Dataset(Generic[Label]):
                 right_X[i] = self.X[i]
                 right_y[i] = self.y[i]
         return (type(self)(np.array(left_X), left_y), type(self)(np.array(right_X), right_y))
+
+    def load_sonar(self) -> tuple[npt.NDArray[np.float64], npt.NDArray[str]]:
+        df = pd.read_csv('sonar.all-data'
+        ,header=None)
+        X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy()
+        y: npt.NDArray[str] = df[df.columns[-1]].to_numpy(dtype=str)
+        # y = (y=='M').astype(int) # M = mine, R = rock
+        return X, y
+
+    def load_iris(self):
+        iris = sklearn.datasets.load_iris()
+        return iris.data, iris.target

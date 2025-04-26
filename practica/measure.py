@@ -1,8 +1,8 @@
 from abc import abstractmethod
 import numpy as np
-from .dataset import Dataset, Label
+from dataset import Dataset, Label
 from typing import override
-import logging
+# import logging
 
 class Impurity:
     @abstractmethod

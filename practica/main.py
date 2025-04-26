@@ -1,4 +1,6 @@
-from .randomForest import Forest
+import numpy.typing as npt
+from randomForest import Forest
+from dataset import Label
 import numpy as np
 import sys
 import logging
@@ -9,25 +11,22 @@ def main():
         logging.error("This program requires an argument")
         return
         
-    dataset = sys.argv[0];
+    dataset = sys.argv[1];
     
-    y: list[str] =[]
+    y: npt.NDArray[Label] =[]
     dX: list[list[float]]=[[]]
     if dataset == "lily": #???
         #Include importted database 
         print("Important");
     else:
-        f = open(f"./dataset/${dataset}.csv", 'r')
-        y: list[str] =[]
-        dX: list[list[float]]=[[]]
-        
+        f = open(f"./dataset/Sonar/sonar.all-data.csv", 'r')
         for line in f.readlines():
             fields = line.split(',')
             y.append(fields[len(fields)])
             try:
                 dX.append([float(param) for param in fields[:-1]])
             except:
-                logging.error("Couldn't read file, check formatting"
+                logging.error("Couldn't read file, check formatting")
 
         f.close()
     
@@ -42,3 +41,5 @@ def main():
     logging.info("Creating the Random Forest")
     forest = Forest(num_trees, max_depth, min_size_split, ratio_samples, num_random_features, criterion)
     logging.info("Random Forest created")
+
+main()

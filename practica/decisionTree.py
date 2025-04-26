@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from typing import override, Generic
 import numpy as np
-from .dataset import Label
+from dataset import Label
 import logging
-logging.basicCongif(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 class Node(Generic[Label]):
     @abstractmethod
@@ -26,7 +26,7 @@ class Parent(Node[Label]):
         self.threshold: np.float64 = v
         self.left_child: Node[Label]
         self.right_child: Node[Label]
-        logging.info(f"Created a node with father with a feature_index: {k_index}, threshold: {v}"
+        logging.info(f"Created a node with father with a feature_index: {k_index}, threshold: {v}")
     @override
     def predict(self, inputs: list[float]) -> Label:
         if inputs[self.feature_index] < self.threshold:
