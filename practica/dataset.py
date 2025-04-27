@@ -14,9 +14,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class Dataset(Generic[Label]):
     def __init__ (self, X: npt.NDArray[np.float64], y: npt.NDArray[Label]):
         self.X: npt.NDArray[np.float64] = X;
-        assert self.X.ndim == 2;
+        # assert self.X.ndim == 2;
         self.y: npt.NDArray[Label] = y;
-        assert self.X.ndim == 1;
+        # assert self.X.ndim == 1;
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features=self.X.shape
@@ -46,14 +46,35 @@ class Dataset(Generic[Label]):
                 right_y[i] = self.y[i]
         return (type(self)(np.array(left_X), left_y), type(self)(np.array(right_X), right_y))
 
-    def load_sonar(self) -> tuple[npt.NDArray[np.float64], npt.NDArray[str]]:
-        df = pd.read_csv('sonar.all-data'
-        ,header=None)
-        X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy()
-        y: npt.NDArray[str] = df[df.columns[-1]].to_numpy(dtype=str)
-        # y = (y=='M').astype(int) # M = mine, R = rock
-        return X, y
+    def load_sonar(self) -> bool:
+        df = pd.read_csv('sonar.all-data', header=None)
+        if df.empty:
+            return False
 
-    def load_iris(self):
+        self.X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy(dtype=np.float64)
+        assert self.X.ndim == 2
+
+        y: npt.NDArray[Label] = df[df.columns[-1]].to_numpy(dtype=str)
+        y = (y=='M').astype(int) # M = mine, R = rock
+
+        self.y: npt.NDArray[Label] = y;
+        assert self.X.ndim == 1;
+        self.num_samples: int
+        self.num_features: int
+        self.num_samples, self.num_features=self.X.shape
+        return True
+
+    def load_iris(self) -> bool:
         iris = sklearn.datasets.load_iris()
-        return iris.data, iris.target
+
+        self.X: npt.NDArray[np.float64] = iris.data
+        assert self.X.ndim == 2;
+
+        y: npt.NDArray[Label] = iris.target
+
+        self.y: npt.NDArray[Label] = y
+        assert self.X.ndim == 1
+        self.num_samples: int
+        self.num_features: int
+        self.num_samples, self.num_features=self.X.shape
+        return True

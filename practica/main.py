@@ -1,6 +1,6 @@
-from .randomForest import Forest
-from .dataset import Dataset, Label
-from .measure import Gini, Impurity
+from randomForest import Forest
+from dataset import Dataset, Label
+from measure import Gini, Impurity
 import numpy as np
 import numpy.typing as npt
 import sys
@@ -21,17 +21,17 @@ def main():
             if dataset.load_lilly:
                 logging.info('Lily dataset loaded!')
             else: 
-                logging.error('Could not load Lilly, see logs'):
+                logging.error('Could not load Lilly, see logs')
         case 'sonar':
             if dataset.load_sonar:
                 logging.info('Sonar dataset loaded!')
             else: 
-                logging.error('Could not load Sonar, see logs'):
-        case 'sonar':
+                logging.error('Could not load Sonar, see logs')
+        case 'iris':
             if dataset.load_iris:
                 logging.info('Iris dataset loaded!')
             else: 
-                logging.error('Could not load Lilly, see logs'):
+                logging.error('Could not load Lilly, see logs')
         case _:
             print('Dataset not found, try another option: ')
             print('- lilly')

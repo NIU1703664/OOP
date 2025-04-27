@@ -1,9 +1,9 @@
 import numpy as np
 from typing import Generic
 from numpy.typing import NDArray
-from .decisionTree import Leaf, Parent, Node
-from .dataset import Dataset, Label
-from .measure import Impurity
+from decisionTree import Leaf, Parent, Node
+from dataset import Dataset, Label
+from measure import Impurity
 import logging
 
 
