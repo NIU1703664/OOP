@@ -5,18 +5,17 @@ import pandas as pd
 import sklearn.datasets
 import numpy.typing as npt
 import logging
-Label = TypeVar("Label", bound=np.generic, covariant=True)
 
 # Configurate the logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-class Dataset(Generic[Label]):
-    def __init__ (self, X: npt.NDArray[np.float64], y: npt.NDArray[Label]):
+class Dataset:
+    def __init__ (self, X: npt.NDArray[np.float64], y: npt.NDArray[str]):
         self.X: npt.NDArray[np.float64] = X;
-        # assert self.X.ndim == 2;
-        self.y: npt.NDArray[Label] = y;
-        # assert self.X.ndim == 1;
+        assert self.X.ndim == 2;
+        self.y: npt.NDArray[str] = y;
+        assert self.X.ndim == 1;
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features=self.X.shape
@@ -26,17 +25,17 @@ class Dataset(Generic[Label]):
         indexes: list[int]= list(np.random.choice(range(0,n),int(n*ratio_samples), replace =True));
         return type(self)( np.array([self.X[i] for i in indexes]), np.array([self.y[i] for i in indexes]))
 
-    def most_frequent_label(self) -> Label:
+    def most_frequent_label(self) -> str:
         values, counts = np.unique(self.y, return_counts=True)
         ind = np.argmax(counts)
-        ret: Label = values[ind]
+        ret: str = values[ind]
         return ret
 
     def split(self, feature_index: np.int64, value: np.float64) -> tuple[Self, Self]:
         left_X: list[list[np.float64]] = []
-        left_y: npt.NDArray[Label] = np.array([])
+        left_y: npt.NDArray[str] = np.array([])
         right_X: list[list[np.float64]] = []
-        right_y: npt.NDArray[Label] = np.array([])
+        right_y: npt.NDArray[str] = np.array([])
         for i in range(self.num_samples):
             if self.X[feature_index] < value:
                 left_X[i] = self.X[i]
@@ -46,35 +45,24 @@ class Dataset(Generic[Label]):
                 right_y[i] = self.y[i]
         return (type(self)(np.array(left_X), left_y), type(self)(np.array(right_X), right_y))
 
-    def load_sonar(self) -> bool:
+    @classmethod
+    def load_sonar(cls) -> Self:
         df = pd.read_csv('sonar.all-data', header=None)
         if df.empty:
             return False
 
-        self.X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy(dtype=np.float64)
+        X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy(dtype=np.float64)
         assert self.X.ndim == 2
 
-        y: npt.NDArray[Label] = df[df.columns[-1]].to_numpy(dtype=str)
+        y: npt.NDArray[str] = df[df.columns[-1]].to_numpy(dtype=str)
         y = (y=='M').astype(int) # M = mine, R = rock
 
-        self.y: npt.NDArray[Label] = y;
-        assert self.X.ndim == 1;
-        self.num_samples: int
-        self.num_features: int
-        self.num_samples, self.num_features=self.X.shape
-        return True
+        return cls(X, y)
 
-    def load_iris(self) -> bool:
-        iris = sklearn.datasets.load_iris()
+    @classmethod
+    def load_iris(cls) -> Self:
+        X: npt.NDArray[np.float64]
+        y: npt.NDArray[str]
+        X, y = sklearn.datasets.load_iris(return_X_y=True)
 
-        self.X: npt.NDArray[np.float64] = iris.data
-        assert self.X.ndim == 2;
-
-        y: npt.NDArray[Label] = iris.target
-
-        self.y: npt.NDArray[Label] = y
-        assert self.X.ndim == 1
-        self.num_samples: int
-        self.num_features: int
-        self.num_samples, self.num_features=self.X.shape
-        return True
+        return cls(X, y)
