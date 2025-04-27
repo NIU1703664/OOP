@@ -13,10 +13,10 @@ logging.basicConfig(
 
 
 class Dataset:
-    def __init__(self, X: npt.NDArray[np.float64], y: npt.NDArray[str]):
+    def __init__(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.str_]):
         self.X: npt.NDArray[np.float64] = X
         assert self.X.ndim == 2
-        self.y: npt.NDArray[str] = y
+        self.y: npt.NDArray[np.str_] = y
         assert self.y.ndim == 1
         self.num_samples: int
         self.num_features: int
@@ -68,7 +68,7 @@ class Dataset:
         )
         assert self.X.ndim == 2
 
-        y: npt.NDArray[str] = df[df.columns[-1]].to_numpy(dtype=str)
+        y: npt.NDArray[np.str_] = df[df.columns[-1]].to_numpy(dtype=str)
         y = (y == 'M').astype(int)   # M = mine, R = rock
 
         return cls(X, y)
@@ -76,7 +76,7 @@ class Dataset:
     @classmethod
     def load_iris(cls) -> Self:
         X: npt.NDArray[np.float64]
-        y: npt.NDArray[str]
+        y: npt.NDArray[np.int64]
         X, y = sklearn.datasets.load_iris(return_X_y=True)
 
         return cls(X, y)
