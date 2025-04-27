@@ -7,6 +7,10 @@ from dataset import Dataset
 from measure import Impurity
 import logging
 
+logging.basicConfig(
+    level=logging.DEBUG , format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 
 class Forest:
     def __init__(
@@ -27,29 +31,33 @@ class Forest:
         self.decision_trees: list[Node] = []
         logging.info(f'Starting a Random Forest with {num_trees} trees')
 
-    def predict(self, X: npt.NDArray[np.float64]) -> str:
-        logging.debug(f'Making prediction for the entrance: {X}')
-        labels: dict[str, int] = dict()
-        max_value = 0
-        max_label: str | None = None
-        for tree in self.decision_trees:
-            predict: str = tree.predict(X)
-            if predict in labels:
-                labels[predict] += 1
-            else:
-                labels[predict] = 1
+    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.str_]:
+        assert(X.ndim == 2)
+        nrows = X.shape[0];
+        result: npt.NDArray[np.str_]= np.array(["" for _ in range(nrows)])
+        assert(result.ndim == 1)
+        for i in range(nrows):
+            print(f'Making prediction for the entrance: {X[i, :]}')
+            max_value = 0
+            max_label: str | None = None
+            label_count: dict[np.str_, int] = dict()
+            for tree in self.decision_trees:
+                predict: np.str_ = tree.predict(X[i, :])
+                if predict in label_count:
+                    label_count[predict] += 1
+                else:
+                    label_count[predict] = 1
 
-            if labels[predict] > max_value:
-                max_value = labels[predict]
-                max_label = predict
+                if label_count[predict] > max_value:
+                    max_value = label_count[predict]
+                    max_label = predict
+            if max_label == None:
+                logging.error("Forest hasn''t been fit yet")
+                raise Exception("Forest hasn''t been fit yet")
+            result[i] = max_label
+        return result
 
-        if max_label == None:
-            logging.error("Forest hasn''t been fit yet")
-            raise Exception("Forest hasn''t been fit yet")
-
-        return max_label
-
-    def fit(self, X: NDArray[np.float64], y: NDArray[str]):
+    def fit(self, X: NDArray[np.float64], y: NDArray[np.str_]):
         # a pair (X,y) is a dataset, with its own responsibilities
         logging.info('Starting the training of the Random Forest')
         dataset = Dataset(X, y)
@@ -68,7 +76,7 @@ class Forest:
             logging.debug(f'Tree {i+1} created')
 
     def _make_node(self, dataset: Dataset, depth: int) -> Node:
-        logging.debug(
+        logging.info(
             f'Creating node in depth {depth} with {dataset.num_samples} samples'
         )
         if (

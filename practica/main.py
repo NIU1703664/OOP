@@ -54,13 +54,16 @@ def main():
     idx_train = idx[:num_samples_train]
     idx_test = idx[num_samples_train : num_samples_train + num_samples_test]
     X_train, y_train = dataset.X[idx_train], dataset.y[idx_train]
-    X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
+    X_test, y_test = dataset.X[idx_test], [str(k) for k in dataset.y[idx_test]]
     forest.fit(X_train, y_train)
 
     logging.info('Classifying elements in the test class')
-    ypred: str = forest.predict(X_test)
+    ypred: npt.NDArray[np.str_] = forest.predict(X_test)
 
     logging.info('Calculating accuracy')
+    print(ypred)
+    print()
+    print(y_test)
     hits: float = np.sum(ypred == y_test)
     accuracy: float = hits / float(num_samples_test)
     print(f'Accuracy {100*np.round(accuracy,decimals=2)} %')

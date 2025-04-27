@@ -8,7 +8,7 @@ import logging
 
 # Configurate the logging
 logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
 
@@ -23,7 +23,7 @@ class Dataset:
         self.num_samples, self.num_features = self.X.shape
 
     def random_sampling(self, ratio_samples: float) -> Self:
-        n: int = math.floor(self.num_features * ratio_samples)
+        n: int = math.floor(self.num_samples * ratio_samples)
         indexes: list[int] = list(
             np.random.choice(range(0, n), int(n * ratio_samples), replace=True)
         )
@@ -32,26 +32,48 @@ class Dataset:
             np.array([self.y[i] for i in indexes]),
         )
 
-    def most_frequent_label(self) -> str:
+    def most_frequent_label(self) -> np.str_:
         values, counts = np.unique(self.y, return_counts=True)
         ind = np.argmax(counts)
-        ret: str = values[ind]
+        ret: np.str_ = values[ind]
         return ret
 
     def split(
         self, feature_index: np.int64, value: np.float64
     ) -> tuple[Self, Self]:
-        left_X: list[list[np.float64]] = []
-        left_y: npt.NDArray[str] = np.array([])
-        right_X: list[list[np.float64]] = []
-        right_y: npt.NDArray[str] = np.array([])
+        left_length = 0
         for i in range(self.num_samples):
-            if self.X[feature_index] < value:
-                left_X[i] = self.X[i]
-                left_y[i] = self.y[i]
+            if self.X[i, feature_index] < value:
+                left_length += 1
+        left_X: npt.NDArray[np.float64] = np.zeros(
+            (left_length, self.num_features)
+        )
+        left_y: npt.NDArray[np.str_] = np.array(
+            ['' for _ in range(left_length)]
+        )
+        right_length = self.num_samples - left_length
+        right_X: npt.NDArray[np.float64] = np.zeros(
+            (right_length, self.num_features)
+        )
+        right_y: npt.NDArray[np.str_] = np.array(
+            ['' for _ in range(right_length)]
+        )
+
+        left_index, right_index = 0, 0
+        for i in range(self.num_samples):
+            if self.X[i, feature_index] < value:
+                left_X[left_index], left_y[left_index] = (
+                    self.X[i, :],
+                    self.y[i],
+                )
+                left_index += 1
+
             else:
-                right_X[i] = self.X[i]
-                right_y[i] = self.y[i]
+                right_X[right_index], right_y[right_index] = (
+                    self.X[i, :],
+                    self.y[i],
+                )
+                right_index += 1
         return (
             type(self)(np.array(left_X), left_y),
             type(self)(np.array(right_X), right_y),

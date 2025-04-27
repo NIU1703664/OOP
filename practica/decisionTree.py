@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import override, Generic
+from typing import override
 import numpy as np
 import numpy.typing as npt
 import logging
@@ -9,18 +9,18 @@ logging.basicConfig(level=logging.INFO)
 
 class Node:
     @abstractmethod
-    def predict(self, inputs: npt.NDArray[np.float64]) -> str:
+    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
         pass
 
 
 class Leaf(Node):
-    def __init__(self, label: str) -> None:
+    def __init__(self, label: np.str_) -> None:
         super().__init__()
-        self.label: str = label
+        self.label: np.str_ = label
         # logging.info(f'Created a leaf node with an etiquete: {label}')
 
     @override
-    def predict(self, inputs: list[float]) -> str:
+    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
         return self.label
 
 
@@ -36,8 +36,9 @@ class Parent(Node):
         )
 
     @override
-    def predict(self, inputs: list[float]) -> str:
-        if inputs[self.feature_index] < self.threshold:
-            return self.left_child.predict(inputs)
+    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
+        assert row.ndim == 2
+        if row[self.feature_index] < self.threshold:
+            return self.left_child.predict(row)
         else:
-            return self.right_child.predict(inputs)
+            return self.right_child.predict(row)
