@@ -28,7 +28,7 @@ class Forest:
         logging.info(f'Starting a Random Forest with {num_trees} trees')
 
     def predict(self, X: npt.NDArray[np.float64]) -> str:
-        logging.debug(f'Making prediction for the entrance: {x}')
+        logging.debug(f'Making prediction for the entrance: {X}')
         labels: dict[str, int] = dict()
         max_value = 0
         max_label: str | None = None
@@ -85,7 +85,7 @@ class Forest:
     def _make_leaf(self, dataset: Dataset) -> Leaf:
         # label = most frequent class in dataset
         label = dataset.most_frequent_label()
-        logging.info(f'Creating a leaf with label {label}')
+        # logging.info(f'Creating a leaf with label {label}')
         return Leaf(label)
 
     def _make_parent_or_leaf(

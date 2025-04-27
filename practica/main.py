@@ -9,16 +9,19 @@ import logging
 
 def main():
     logging.info('Starting the program')
-    if len(sys.argv) == 0:
+    if len(sys.argv) < 2:
         print('This program requires an argument')
         return
 
-    print(f'Attemtping to load {sys.argv[1]}:')
+    logging.info(f'Attemtping to load {sys.argv[1]}:')
+    dataset: Dataset
     match sys.argv[1]:
         case 'sonar':
-            dataset: Dataset = Dataset.load_sonar
+            dataset = Dataset.load_sonar()
+            logging.info(f'Sonar database loaded')
         case 'iris':
-            dataset: Dataset = Dataset.load_iris
+            dataset = Dataset.load_iris()
+            logging.info(f'Iris database loaded')
         case _:
             print('Dataset not found, try another option: ')
             print('- sonar')
@@ -31,8 +34,8 @@ def main():
     criterion: Impurity = Gini()
     max_depth: int = 10   # maximum number of levels of a decision tree
     min_size_split: int = 5   # if less, do not split a node
-    ratio_samples = 0.7   # sampling with replacement
-    num_random_features = int(np.sqrt(dataset.num_features))
+    ratio_samples: float = 0.7   # sampling with replacement
+    num_random_features: int = int(np.sqrt(dataset.num_features))
     forest = Forest(
         num_trees,
         max_depth,

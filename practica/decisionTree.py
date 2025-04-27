@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 class Node:
     @abstractmethod
-    def predict(self, inputs: list[float]) -> str:
+    def predict(self, inputs: npt.NDArray[np.float64]) -> str:
         pass
 
 
@@ -17,7 +17,7 @@ class Leaf(Node):
     def __init__(self, label: str) -> None:
         super().__init__()
         self.label: str = label
-        logging.info(f'Created a leaf node with an etiquete: {label}')
+        # logging.info(f'Created a leaf node with an etiquete: {label}')
 
     @override
     def predict(self, inputs: list[float]) -> str:
