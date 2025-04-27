@@ -37,7 +37,7 @@ class Parent(Node):
 
     @override
     def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
-        assert row.ndim == 2
+        assert row.ndim == 1
         if row[self.feature_index] < self.threshold:
             return self.left_child.predict(row)
         else:
