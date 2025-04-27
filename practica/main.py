@@ -1,6 +1,7 @@
+import time
 from randomForest import Forest
 from dataset import Dataset
-from measure import Gini, Impurity
+from measure import Impurity, Gini, Entropy
 import numpy as np
 import numpy.typing as npt
 import sys
@@ -31,7 +32,7 @@ def main():
     logging.info('Creating the Random Forest')
     # Hyperparameters
     num_trees: int = 100   # number of decision trees
-    criterion: Impurity = Gini()
+    criterion: Impurity = Entropy()
     max_depth: int = 10   # maximum number of levels of a decision tree
     min_size_split: int = 5   # if less, do not split a node
     ratio_samples: float = 0.7   # sampling with replacement
@@ -49,6 +50,8 @@ def main():
     logging.info('Random Forest created')
 
     logging.info('Fitting Forest to dataset')
+    logging.info('Time starts now!')
+    t1 = time.time()
     ratio_train = 0.7
     num_samples_train: int = int(dataset.num_samples * ratio_train)
     num_samples_test: int = dataset.num_samples - num_samples_train
@@ -58,13 +61,15 @@ def main():
     X_train, y_train = dataset.X[idx_train], dataset.y[idx_train]
     X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
     forest.fit(X_train, y_train)
+    t2 = time.time()
+    logging.info(f'Training time: {t2-t1}s')
 
     logging.info('Classifying elements in the test class')
     ypred: npt.NDArray[np.int64] = forest.predict(X_test)
 
     logging.info('Calculating accuracy')
-    logging.debug(ypred)
-    logging.debug(y_test)
+    # logging.info(ypred)
+    # logging.info(y_test)
     hits: int = np.sum(ypred == y_test)
     accuracy: float = hits / float(num_samples_test)
     print(f'Accuracy {100*np.round(accuracy,decimals=2)} %')

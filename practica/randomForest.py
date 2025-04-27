@@ -1,4 +1,5 @@
 import numpy as np
+import tqdm
 import numpy.typing as npt
 from typing import Generic
 from numpy.typing import NDArray
@@ -21,6 +22,7 @@ class Forest:
         ratio_samples: float,
         num_random_features: int,
         criterion: Impurity,
+        paralel: bool,
     ) -> None:
         self.num_trees: int = num_trees
         self.min_size: int = min_size
@@ -34,11 +36,11 @@ class Forest:
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
         assert X.ndim == 2
         nrows = X.shape[0]
-        result: npt.NDArray[np.int64] = np.array(['' for _ in range(nrows)])
+        result: npt.NDArray[np.int64] = np.zeros(nrows, dtype=np.int64)
         assert result.ndim == 1
         for i in range(nrows):
             max_value = 0
-            max_label: str | None = None
+            max_label: np.int64 = None
             label_count: dict[np.int64, int] = dict()
             for tree in self.decision_trees:
                 predict: np.int64 = tree.predict(X[i, :])
@@ -50,9 +52,9 @@ class Forest:
                 if label_count[predict] > max_value:
                     max_value = label_count[predict]
                     max_label = predict
-            if max_label == None:
-                logging.error("Forest hasn''t been fit yet")
-                raise Exception("Forest hasn''t been fit yet")
+            # if max_label == None:
+            #     logging.error("Forest hasn''t been fit yet")
+            #     raise Exception("Forest hasn''t been fit yet")
             result[i] = max_label
         return result
 
@@ -66,7 +68,7 @@ class Forest:
     def _make_decision_trees(self, dataset: Dataset):
         self.decision_trees = []
         logging.info(f'making {self.num_trees} decision trees')
-        for i in range(self.num_trees):
+        for i in tqdm.tqdm(range(self.num_trees)):
             # sample a subset of the dataset with replacement using
             # np.random.choice() to get the indices of rows in X and y
             subset = dataset.random_sampling(self.ratio_samples)
@@ -75,9 +77,9 @@ class Forest:
             logging.debug(f'Tree {i+1} created')
 
     def _make_node(self, dataset: Dataset, depth: int) -> Node:
-        logging.info(
-            f'Creating node in depth {depth} with {dataset.num_samples} samples'
-        )
+        # logging.info(
+        #     f'Creating node in depth {depth} with {dataset.num_samples} samples'
+        # )
         if (
             depth == self.max_depth
             or dataset.num_samples <= self.min_size
@@ -140,7 +142,7 @@ class Forest:
             values = np.unique(dataset.X[:, idx])
             val: np.float64
             for val in values:
-                assert all(type(k)==np.int64 for k in dataset.y)
+                assert all(type(k) == np.int64 for k in dataset.y)
                 left_dataset, right_dataset = dataset.split(idx, val)
                 cost = self._CART_cost(left_dataset, right_dataset)   # J(k,v)
                 if cost < minimum_cost:
@@ -152,7 +154,7 @@ class Forest:
                     ) = (idx, val, cost, [left_dataset, right_dataset])
 
         if best_split == None or best_feature_index == np.inf:
-            raise Exception('Dataset[str] is empty')
+            raise Exception('Dataset is empty')
 
         return best_feature_index, best_threshold, minimum_cost, best_split
 

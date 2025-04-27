@@ -17,18 +17,15 @@ class Dataset:
         self,
         X: npt.NDArray[np.float64],
         y: npt.NDArray[np.int64],
-        labels: npt.NDArray[np.int64] | None = None,
     ):
         self.X: npt.NDArray[np.float64] = X
         assert self.X.ndim == 2
         self.y: npt.NDArray[np.int64] = y
         assert self.y.ndim == 1
-        assert all(type(k)==np.int64 for k in y)
+        assert all(type(k) == np.int64 for k in y)
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features = self.X.shape
-        if labels != None:
-            self.labels: npt.NDArray[np.int64] = labels
 
     def random_sampling(self, ratio_samples: float) -> Self:
         n: int = math.floor(self.num_samples * ratio_samples)
@@ -56,16 +53,12 @@ class Dataset:
         left_X: npt.NDArray[np.float64] = np.zeros(
             (left_length, self.num_features)
         )
-        left_y: npt.NDArray[np.int64] = np.zeros(
-            left_length, dtype=np.int64
-        )
+        left_y: npt.NDArray[np.int64] = np.zeros(left_length, dtype=np.int64)
         right_length = self.num_samples - left_length
         right_X: npt.NDArray[np.float64] = np.zeros(
             (right_length, self.num_features)
         )
-        right_y: npt.NDArray[np.int64] = np.zeros(
-            right_length, dtype=np.int64
-        )
+        right_y: npt.NDArray[np.int64] = np.zeros(right_length, dtype=np.int64)
 
         left_index, right_index = 0, 0
         for i in range(self.num_samples):
@@ -82,8 +75,8 @@ class Dataset:
                     self.y[i],
                 )
                 right_index += 1
-        assert all(type(k)==np.int64 for k in left_y)
-        assert all(type(k)==np.int64 for k in right_y)
+        assert all(type(k) == np.int64 for k in left_y)
+        assert all(type(k) == np.int64 for k in right_y)
         return (
             type(self)(np.array(left_X), left_y),
             type(self)(np.array(right_X), right_y),
@@ -91,21 +84,20 @@ class Dataset:
 
     @classmethod
     def load_sonar(cls) -> Self:
-        df = pd.read_csv('sonar.all-data', header=None)
-        if df.empty:
-            return False
+        df = pd.read_csv('./datasets/Sonar/sonar.all-data.csv', header=None)
 
         X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy(
             dtype=np.float64
         )
-        assert self.X.ndim == 2
+        assert X.ndim == 2
 
         y: npt.NDArray[np.int64] = df[df.columns[-1]].to_numpy(dtype=str)
-        labels: npt.NDArray[np.int64] = np.unique(y)
 
-        y = np.array(map(lambda x: np.int64(x == 'M'), y))   # M = mine, R = rock
+        y = np.array(
+            list(map(lambda x: np.int64(x == 'M'), y))
+        )   # M = mine, R = rock
 
-        return cls(X, y, labels)
+        return cls(X, y)
 
     @classmethod
     def load_iris(cls) -> Self:

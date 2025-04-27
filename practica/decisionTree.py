@@ -31,9 +31,9 @@ class Parent(Node):
         self.threshold: np.float64 = v
         self.left_child: Node
         self.right_child: Node
-        logging.info(
-            f'Created a node with father with a feature_index: {k_index}, threshold: {v}'
-        )
+        # logging.info(
+        #     f'Created a node with father with a feature_index: {k_index}, threshold: {v}'
+        # )
 
     @override
     def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
