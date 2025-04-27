@@ -35,7 +35,9 @@ def main():
     max_depth: int = 10   # maximum number of levels of a decision tree
     min_size_split: int = 5   # if less, do not split a node
     ratio_samples: float = 0.7   # sampling with replacement
-    num_random_features: int = int(np.sqrt(dataset.num_features))
+    num_random_features: int = int(
+        np.sqrt(dataset.num_features)
+    )   # This number is not chosen at random but represents the number of features to choose at random
     forest = Forest(
         num_trees,
         max_depth,
@@ -54,17 +56,16 @@ def main():
     idx_train = idx[:num_samples_train]
     idx_test = idx[num_samples_train : num_samples_train + num_samples_test]
     X_train, y_train = dataset.X[idx_train], dataset.y[idx_train]
-    X_test, y_test = dataset.X[idx_test], [str(k) for k in dataset.y[idx_test]]
+    X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
     forest.fit(X_train, y_train)
 
     logging.info('Classifying elements in the test class')
     ypred: npt.NDArray[np.int64] = forest.predict(X_test)
 
     logging.info('Calculating accuracy')
-    print(ypred)
-    print()
-    print(y_test)
-    hits: float = np.sum(ypred == y_test)
+    logging.debug(ypred)
+    logging.debug(y_test)
+    hits: int = np.sum(ypred == y_test)
     accuracy: float = hits / float(num_samples_test)
     print(f'Accuracy {100*np.round(accuracy,decimals=2)} %')
 

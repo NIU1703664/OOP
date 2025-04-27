@@ -37,7 +37,6 @@ class Forest:
         result: npt.NDArray[np.int64] = np.array(['' for _ in range(nrows)])
         assert result.ndim == 1
         for i in range(nrows):
-            print(f'Making prediction for the entrance: {X[i, :]}')
             max_value = 0
             max_label: str | None = None
             label_count: dict[np.int64, int] = dict()
@@ -119,7 +118,7 @@ class Forest:
             # dataset and none to the other, so we make a leaf instead of a parent
             return self._make_leaf(dataset)
         else:
-            node = Parent[str](best_feature_index, best_threshold)
+            node = Parent(best_feature_index, best_threshold)
             node.left_child = self._make_node(left_dataset, depth + 1)
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
