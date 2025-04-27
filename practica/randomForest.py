@@ -1,8 +1,9 @@
 import numpy as np
+import numpy.typing as npt
 from typing import Generic
 from numpy.typing import NDArray
 from decisionTree import Leaf, Parent, Node
-from dataset import Dataset, Label
+from dataset import Dataset
 from measure import Impurity
 import logging
 
@@ -23,16 +24,16 @@ class Forest:
         self.ratio_samples: float = ratio_samples
         self.num_random_features: int = num_random_features
         self.criterion: Impurity = criterion
-        self.decision_trees: list[Node[Label]] = []
+        self.decision_trees: list[Node[str]] = []
         logging.info(f'Starting a Random Forest with {num_trees} trees')
 
-    def predict(self, X: list[float]) -> Label:
+    def predict(self, X: npt.NDArray[np.float64]) -> str:
         logging.debug(f'Making prediction for the entrance: {x}')
-        labels: dict[Label, int] = dict()
+        labels: dict[str, int] = dict()
         max_value = 0
-        max_label: Label | None = None
+        max_label: str | None = None
         for tree in self.decision_trees:
-            predict: Label = tree.predict(x)
+            predict: str = tree.predict(X)
             if predict in labels:
                 labels[predict] += 1
             else:
@@ -48,14 +49,14 @@ class Forest:
 
         return max_label
 
-    def fit(self, X: NDArray[np.float64], y: NDArray[Label]):
+    def fit(self, X: NDArray[np.float64], y: NDArray[str]):
         # a pair (X,y) is a dataset, with its own responsibilities
         logging.info('Starting the training of the Random Forest')
         dataset = Dataset(X, y)
         self._make_decision_trees(dataset)
         logging.info('Training finished')
 
-    def _make_decision_trees(self, dataset: Dataset[Label]):
+    def _make_decision_trees(self, dataset: Dataset[str]):
         self.decision_trees = []
         logging.info(f'making {self.num_trees} decision trees')
         for i in range(self.num_trees):
@@ -66,7 +67,7 @@ class Forest:
             self.decision_trees.append(tree)
             logging.debug(f'Tree {i+1} created')
 
-    def _make_node(self, dataset: Dataset[Label], depth: int) -> Node[Label]:
+    def _make_node(self, dataset: Dataset[str], depth: int) -> Node[str]:
         logging.debug(
             f'Creating node in depth {depth} with {dataset.num_samples} samples'
         )
@@ -81,15 +82,15 @@ class Forest:
             node = self._make_parent_or_leaf(dataset, depth)
         return node
 
-    def _make_leaf(self, dataset: Dataset[Label]) -> Leaf[Label]:
+    def _make_leaf(self, dataset: Dataset[str]) -> Leaf[str]:
         # label = most frequent class in dataset
         label = dataset.most_frequent_label()
         logging.info(f'Creating a leaf with label {label}')
         return Leaf(label)
 
     def _make_parent_or_leaf(
-        self, dataset: Dataset[Label], depth: int
-    ) -> Node[Label]:
+        self, dataset: Dataset[str], depth: int
+    ) -> Node[str]:
         # select a random subset of features, to make trees more diverse
         idx_features = np.random.choice(
             range(dataset.num_features),
@@ -112,15 +113,15 @@ class Forest:
             # dataset and none to the other, so we make a leaf instead of a parent
             return self._make_leaf(dataset)
         else:
-            node = Parent[Label](best_feature_index, best_threshold)
+            node = Parent[str](best_feature_index, best_threshold)
             node.left_child = self._make_node(left_dataset, depth + 1)
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
 
     def _best_split(
-        self, idx_features: NDArray[np.int64], dataset: Dataset[Label]
+        self, idx_features: NDArray[np.int64], dataset: Dataset[str]
     ) -> tuple[
-        np.int64, np.float64, np.float64, list[Dataset[Label]]
+        np.int64, np.float64, np.float64, list[Dataset[str]]
     ]:   # find the best pair (feature, threshold) by exploring all possible pairs
         int_max = np.int64(np.iinfo(np.int64).max)
         best_feature_index, best_threshold, minimum_cost = (
@@ -128,7 +129,7 @@ class Forest:
             np.float64(np.inf),
             np.float64(np.inf),
         )
-        best_split: list[Dataset[Label]] | None = None
+        best_split: list[Dataset[str]] | None = None
         idx: np.int64
         for idx in idx_features:
             values = np.unique(dataset.X[:, idx])
@@ -145,12 +146,12 @@ class Forest:
                     ) = (idx, val, cost, [left_dataset, right_dataset])
 
         if best_split == None or best_feature_index == np.inf:
-            raise Exception('Dataset[Label] is empty')
+            raise Exception('Dataset[str] is empty')
 
         return best_feature_index, best_threshold, minimum_cost, best_split
 
     def _CART_cost(
-        self, left_dataset: Dataset[Label], right_dataset: Dataset[Label]
+        self, left_dataset: Dataset[str], right_dataset: Dataset[str]
     ) -> np.float64:
         # the J(k,v) equation in the slides, using Gini
         left_len = np.float64(left_dataset.num_samples)

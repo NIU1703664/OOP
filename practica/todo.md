@@ -24,3 +24,4 @@
 
 - Dataset external generics
 - Make loading return success, arrays can be acessible from object
+- Putting everything into a module and using generics again
