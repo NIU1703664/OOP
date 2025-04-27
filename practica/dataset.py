@@ -13,14 +13,21 @@ logging.basicConfig(
 
 
 class Dataset:
-    def __init__(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.str_]):
+    def __init__(
+        self,
+        X: npt.NDArray[np.float64],
+        y: npt.NDArray[np.int64],
+        labels: npt.NDArray[np.int64] | None = None,
+    ):
         self.X: npt.NDArray[np.float64] = X
         assert self.X.ndim == 2
-        self.y: npt.NDArray[np.str_] = y
+        self.y: npt.NDArray[np.int64] = y
         assert self.y.ndim == 1
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features = self.X.shape
+        if labels != None:
+            self.labels: npt.NDArray[np.int64] = labels
 
     def random_sampling(self, ratio_samples: float) -> Self:
         n: int = math.floor(self.num_samples * ratio_samples)
@@ -32,10 +39,10 @@ class Dataset:
             np.array([self.y[i] for i in indexes]),
         )
 
-    def most_frequent_label(self) -> np.str_:
+    def most_frequent_label(self) -> np.int64:
         values, counts = np.unique(self.y, return_counts=True)
         ind = np.argmax(counts)
-        ret: np.str_ = values[ind]
+        ret: np.int64 = values[ind]
         return ret
 
     def split(
@@ -48,14 +55,14 @@ class Dataset:
         left_X: npt.NDArray[np.float64] = np.zeros(
             (left_length, self.num_features)
         )
-        left_y: npt.NDArray[np.str_] = np.array(
+        left_y: npt.NDArray[np.int64] = np.array(
             ['' for _ in range(left_length)]
         )
         right_length = self.num_samples - left_length
         right_X: npt.NDArray[np.float64] = np.zeros(
             (right_length, self.num_features)
         )
-        right_y: npt.NDArray[np.str_] = np.array(
+        right_y: npt.NDArray[np.int64] = np.array(
             ['' for _ in range(right_length)]
         )
 
@@ -90,7 +97,7 @@ class Dataset:
         )
         assert self.X.ndim == 2
 
-        y: npt.NDArray[np.str_] = df[df.columns[-1]].to_numpy(dtype=str)
+        y: npt.NDArray[np.int64] = df[df.columns[-1]].to_numpy(dtype=str)
         y = (y == 'M').astype(int)   # M = mine, R = rock
 
         return cls(X, y)

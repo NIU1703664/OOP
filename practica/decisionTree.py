@@ -9,18 +9,18 @@ logging.basicConfig(level=logging.INFO)
 
 class Node:
     @abstractmethod
-    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
+    def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
         pass
 
 
 class Leaf(Node):
-    def __init__(self, label: np.str_) -> None:
+    def __init__(self, label: np.int64) -> None:
         super().__init__()
-        self.label: np.str_ = label
+        self.label: np.int64 = label
         # logging.info(f'Created a leaf node with an etiquete: {label}')
 
     @override
-    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
+    def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
         return self.label
 
 
@@ -36,7 +36,7 @@ class Parent(Node):
         )
 
     @override
-    def predict(self, row: npt.NDArray[np.float64]) -> np.str_:
+    def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
         assert row.ndim == 2
         if row[self.feature_index] < self.threshold:
             return self.left_child.predict(row)

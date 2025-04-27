@@ -58,7 +58,7 @@ def main():
     forest.fit(X_train, y_train)
 
     logging.info('Classifying elements in the test class')
-    ypred: npt.NDArray[np.str_] = forest.predict(X_test)
+    ypred: npt.NDArray[np.int64] = forest.predict(X_test)
 
     logging.info('Calculating accuracy')
     print(ypred)
