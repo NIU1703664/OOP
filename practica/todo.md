@@ -4,24 +4,24 @@
 
 - [ ] Draw UML - Eric
 
-- [ ] Logging and Comments - Eric
+- [x] Logging and Comments - Eric
 
-- [ ] Give dataset full responsibility - Kai
+- [x] Give dataset full responsibility - Kai
 
 - [x] Add entropy - Kai
 
 - [x] Move entropy and gini to different class - Kai
 
-- [ ] Precision metrics - Daniel
+- [x] Precision & Performance metrics - Daniel
+
+- [ ] Load MNIST - Kai
 
 - [ ] MNIST is fairly accurate
 
-- [ ] Multiprocessing (parallelism)
+- [ ] Multiprocessing (parallelism) - Dani
 
-- [ ] Performance metrics
+- [ ] Extra-trees - Dani
 
-### QuickFixes
+### For later
 
-- Dataset external generics
-- Make loading return success, arrays can be acessible from object
 - Putting everything into a module and using generics again
