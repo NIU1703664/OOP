@@ -18,9 +18,9 @@
 
 - [ ] MNIST is fairly accurate
 
-- [ ] Multiprocessing (parallelism) - Dani
+- [x] Multiprocessing (parallelism) - Dani
 
-- [ ] Extra-trees - Dani
+- [x] Extra-trees - Dani
 
 ### For later
 

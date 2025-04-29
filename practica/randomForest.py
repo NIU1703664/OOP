@@ -1,6 +1,9 @@
+from abc import abstractmethod
 import numpy as np
 import tqdm
+import time
 import numpy.typing as npt
+import multiprocessing
 from typing import Generic
 from numpy.typing import NDArray
 from decisionTree import Leaf, Parent, Node
@@ -30,7 +33,9 @@ class Forest:
         self.ratio_samples: float = ratio_samples
         self.num_random_features: int = num_random_features
         self.criterion: Impurity = criterion
+        self.paralel: bool = paralel
         self.decision_trees: list[Node] = []
+        self.time = 0
         logging.info(f'Starting a Random Forest with {num_trees} trees')
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
@@ -62,12 +67,16 @@ class Forest:
         # a pair (X,y) is a dataset, with its own responsibilities
         logging.info('Starting the training of the Random Forest')
         dataset = Dataset(X, y)
-        self._make_decision_trees(dataset)
+        if not self.paralel:
+            self._make_decision_trees(dataset)
+        else:
+            self._make_decision_trees_multiprocessing(dataset)
         logging.info('Training finished')
 
     def _make_decision_trees(self, dataset: Dataset):
         self.decision_trees = []
         logging.info(f'making {self.num_trees} decision trees')
+        t1 = time.time()
         for i in tqdm.tqdm(range(self.num_trees)):
             # sample a subset of the dataset with replacement using
             # np.random.choice() to get the indices of rows in X and y
@@ -75,6 +84,23 @@ class Forest:
             tree = self._make_node(subset, 1)   # the root of the decision tree
             self.decision_trees.append(tree)
             logging.debug(f'Tree {i+1} created')
+        t2 = time.time()
+        self.time = t2 - t1
+
+    def _make_decision_trees_multiprocessing(self, dataset: Dataset):
+        print(f'CPU Cores: {multiprocessing.cpu_count()}')
+        t1 = time.time()
+        with multiprocessing.Pool() as pool:
+            self.decision_trees = pool.starmap(
+                self._make_node,
+                [
+                    (dataset.random_sampling(self.ratio_samples), 1)
+                    for nprocess in range(self.num_trees)
+                ],
+            )
+        t2 = time.time()
+        self.time = t2 - t1
+        logging.info('{} seconds per tree'.format((t2 - t1) / self.num_trees))
 
     def _make_node(self, dataset: Dataset, depth: int) -> Node:
         # logging.info(
@@ -125,6 +151,30 @@ class Forest:
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
 
+    @abstractmethod
+    def _best_split(
+        self, idx_features: NDArray[np.int64], dataset: Dataset
+    ) -> tuple[
+        np.int64, np.float64, np.float64, list[Dataset]
+    ]:   # find the best pair (feature, threshold) by exploring all possible pairs
+        pass
+
+    def _CART_cost(
+        self, left_dataset: Dataset, right_dataset: Dataset
+    ) -> np.float64:
+        # the J(k,v) equation in the slides, using Gini
+        left_len = np.float64(left_dataset.num_samples)
+        right_len = np.float64(right_dataset.num_samples)
+        critereon: Impurity = self.criterion
+
+        return left_len / (left_len + right_len) * critereon.purity(
+            left_dataset
+        ) + right_len / (left_len + right_len) * critereon.purity(
+            right_dataset
+        )
+
+
+class RandomForest(Forest):
     def _best_split(
         self, idx_features: NDArray[np.int64], dataset: Dataset
     ) -> tuple[
@@ -158,16 +208,35 @@ class Forest:
 
         return best_feature_index, best_threshold, minimum_cost, best_split
 
-    def _CART_cost(
-        self, left_dataset: Dataset, right_dataset: Dataset
-    ) -> np.float64:
-        # the J(k,v) equation in the slides, using Gini
-        left_len = np.float64(left_dataset.num_samples)
-        right_len = np.float64(right_dataset.num_samples)
-        critereon: Impurity = self.criterion
 
-        return left_len / (left_len + right_len) * critereon.purity(
-            left_dataset
-        ) + right_len / (left_len + right_len) * critereon.purity(
-            right_dataset
+class ExtraTrees(Forest):
+    def _best_split(
+        self, idx_features: NDArray[np.int64], dataset: Dataset
+    ) -> tuple[
+        np.int64, np.float64, np.float64, list[Dataset]
+    ]:   # find the best pair (feature, threshold) by exploring all possible pairs
+        int_max = np.int64(np.iinfo(np.int64).max)
+        best_feature_index, best_threshold, minimum_cost = (
+            int_max,
+            np.float64(np.inf),
+            np.float64(np.inf),
         )
+        best_split: list[Dataset] | None = None
+        idx: np.int64
+        for idx in idx_features:
+            values = np.unique(dataset.X[:, idx])
+            val: np.float64 = np.random.choice(values)
+            left_dataset, right_dataset = dataset.split(idx, val)
+            cost = self._CART_cost(left_dataset, right_dataset)   # J(k,v)
+            if cost < minimum_cost:
+                (
+                    best_feature_index,
+                    best_threshold,
+                    minimum_cost,
+                    best_split,
+                ) = (idx, val, cost, [left_dataset, right_dataset])
+
+        if best_split == None or best_feature_index == np.inf:
+            raise Exception('Dataset is empty')
+
+        return best_feature_index, best_threshold, minimum_cost, best_split
