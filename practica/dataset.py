@@ -9,7 +9,7 @@ import logging
 
 # Configurate the logging
 logging.basicConfig(
-    level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
 

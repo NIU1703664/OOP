@@ -2,7 +2,7 @@
 
 ## Milestone 1
 
-- [ ] Draw UML - Eric
+- [X] Draw UML - Eric
 
 - [x] Logging and Comments - Eric
 

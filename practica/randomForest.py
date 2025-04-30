@@ -12,7 +12,7 @@ from measure import Impurity
 import logging
 
 logging.basicConfig(
-    level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
 
