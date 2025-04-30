@@ -1,0 +1,86 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam noteFontSize 11
+
+abstract class Impurity {
+  {abstract}+ purity(dataset: Dataset): float
+}
+
+class Gini {
+  + purity(dataset: Dataset): float
+}
+
+class Entropy {
+  + purity(dataset: Dataset): float
+}
+
+class Dataset {
+  - X: float[][]
+  - y: int[]
+  - num_samples: int
+  - num_features: int
+  + random_sampling(ratio: float): Dataset
+  + most_frequent_label(): int
+  + split(feature: int, value: float): tuple[Dataset, Dataset]
+  + load_sonar(): Dataset {static}
+  + load_iris(): Dataset {static}
+  + load_MNIST(): Dataset {static}
+}
+
+interface Node {
+  {abstract}+ predict(row: float[]): int
+}
+
+class Leaf {
+  - label: int
+  + predict(row: float[]): int
+}
+
+class Parent {
+  - feature_index: int
+  - threshold: float
+  - left_child: Node
+  - right_child: Node
+  + predict(row: float[]): int
+}
+
+abstract class Forest {
+  - num_trees: int
+  - min_size: int
+  - max_depth: int
+  - ratio_samples: float
+  - num_random_features: int
+  - criterion: Impurity
+  - paralel: bool
+  - time: float
+  - decision_trees: list<Node>
+  + fit(X: float[][], y: int[]): void
+  + predict(X: float[][]): int[]
+  # {abstract} _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+  # _make_node(dataset: Dataset, depth: int): Node
+  # _make_leaf(dataset: Dataset): Leaf
+  # _make_parent_or_leaf(dataset: Dataset, depth: int): Node
+  # _CART_cost(left: Dataset, right: Dataset): float
+}
+
+class RandomForest {
+  # _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+}
+
+class ExtraTrees {
+  # _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+}
+
+Impurity <|-- Gini
+Impurity <|-- Entropy
+Node <|-- Leaf
+Node <|-- Parent
+Parent *-left-> Node
+Parent *-right-> Node
+Forest *-right-> Node : decision_trees
+Forest o--> Impurity : criterion
+Forest --> Dataset : uses
+Forest <|-- RandomForest
+Forest <|-- ExtraTrees
+
+@enduml
