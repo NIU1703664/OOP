@@ -1,3 +1,4 @@
+#!/bin/python3
 from randomForest import Forest, RandomForest, ExtraTrees
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy
@@ -5,10 +6,17 @@ import numpy as np
 import numpy.typing as npt
 import sys
 import logging
+import argparse
+
+# Hyperparameters
+num_trees: int = 84   # number of decision trees
+max_depth: int = 20   # maximum number of levels of a decision tree
+min_size_split: int = 5   # if less, do not split a node
+ratio_samples: float = 0.8   # sampling with replacement
+ratio_train = 0.7
 
 
 def benchmark(forest: Forest, dataset: Dataset):
-    ratio_train = 0.7
     num_samples_train: int = int(dataset.num_samples * ratio_train)
     num_samples_test: int = dataset.num_samples - num_samples_train
     idx = np.random.permutation(range(dataset.num_samples))
@@ -21,19 +29,166 @@ def benchmark(forest: Forest, dataset: Dataset):
     ypred: npt.NDArray[np.int64] = forest.predict(X_test)
     hits: int = np.sum(ypred == y_test)
     accuracy: float = hits / float(num_samples_test)
+    return (forest.time, accuracy)
 
-    return f'{np.round(forest.time,decimals=3):5}s  {100*np.round(accuracy,decimals=2):3}%'
+
+def test_single(args, dataset: Dataset):
+    num_random_features: int = int(
+        np.sqrt(dataset.num_features)
+    )   # This number is not chosen at random but represents the number of features to choose at random
+    forest: Forest
+    criterion: Impurity
+    match args.measure:
+        case 'gini':
+            criterion = Gini()
+        case 'entropy':
+            criterion = Entropy()
+        case _:
+            print('Invalid measure selected')
+            return
+    match args.arch:
+        case 'random':
+            forest = RandomForest(
+                num_trees,
+                max_depth,
+                min_size_split,
+                ratio_samples,
+                num_random_features,
+                criterion,
+                args.paralel,
+            )
+        case 'extra':
+            forest = ExtraTrees(
+                num_trees,
+                max_depth,
+                min_size_split,
+                ratio_samples,
+                num_random_features,
+                criterion,
+                args.paralel,
+            )
+        case _:
+            print('Invalid architecture selected')
+            return
+    time, acc = benchmark(forest, dataset)
+    print(f'Time: {time:2.3f}s, Accuracy: {(100*acc):2.1f}%')
+
+
+def test_all(args, dataset: Dataset):
+    num_random_features: int = int(
+        np.sqrt(dataset.num_features)
+    )   # This number is not chosen at random but represents the number of features to choose at random
+    criterion: Impurity
+    match args.measure:
+        case 'gini':
+            criterion = Gini()
+        case 'entropy':
+            criterion = Entropy()
+        case _:
+            print('Invalid measure selected')
+            return
+    sr_time, sr_acc = benchmark(
+        RandomForest(
+            num_trees,
+            max_depth,
+            min_size_split,
+            ratio_samples,
+            num_random_features,
+            criterion,
+            False,
+        ),
+        dataset,
+    )
+    pr_time, pr_acc = benchmark(
+        RandomForest(
+            num_trees,
+            max_depth,
+            min_size_split,
+            ratio_samples,
+            num_random_features,
+            criterion,
+            True,
+        ),
+        dataset,
+    )
+    se_time, se_acc = benchmark(
+        ExtraTrees(
+            num_trees,
+            max_depth,
+            min_size_split,
+            ratio_samples,
+            num_random_features,
+            criterion,
+            False,
+        ),
+        dataset,
+    )
+    pe_time, pe_acc = benchmark(
+        ExtraTrees(
+            num_trees,
+            max_depth,
+            min_size_split,
+            ratio_samples,
+            num_random_features,
+            criterion,
+            True,
+        ),
+        dataset,
+    )
+    print('')
+    print('                   Sequential    |     Paralel   ')
+    print('                -----------------|-----------------')
+    print(
+        f'Random Forest     {sr_time:2.3f}s, {(100*sr_acc):2.1f}%  |  {pr_time:2.3f}s, {(100*pr_acc):2.1f}% '
+    )
+    print(
+        f'Extra Trees       {se_time:2.3f}s, {(100*se_acc):2.1f}%  |  {pe_time:2.3f}s, {(100*pe_acc):2.1f}% '
+    )
 
 
 def main():
-    logging.info('Starting the program')
-    if len(sys.argv) < 2:
+    # add argument
+    parser = argparse.ArgumentParser(description='Random Forest classifier')
+    _ = parser.add_argument(
+        'dataset',
+        help='Which dataset to train and test',
+    )
+    _ = parser.add_argument(
+        '-m',
+        '--measure',
+        default='gini',
+        help='Select purity measure algorithm',
+    )
+    _ = parser.add_argument(
+        '-p',
+        '--paralel',
+        nargs='?',
+        const=True,
+        default=False,
+        help='Build the forest with parallel processing',
+    )
+    _ = parser.add_argument(
+        '-a',
+        '--arch',
+        default='random',
+        help='Tree architecture',
+    )
+    _ = parser.add_argument(
+        '--full_benchmark',
+        nargs='?',
+        const=True,
+        default=False,
+        help='Compare in a table all parallelization and architecture options, overrides --paralel and --arch',
+    )
+    args = parser.parse_args()
+    if args.dataset == None:
         print('This program requires an argument')
         return
 
-    logging.info(f'Attemtping to load {sys.argv[1]}:')
+    logging.info('Starting the program')
+    logging.info(f'Attemtping to load {args.dataset}:')
     dataset: Dataset
-    match sys.argv[1]:
+    match args.dataset:
         case 'sonar':
             dataset = Dataset.load_sonar()
             logging.info(f'Sonar database loaded')
@@ -49,62 +204,11 @@ def main():
             print('- iris')
             print('- mnist')
             return
-
-    logging.info('Creating the Random Forest')
-    # Hyperparameters
-    num_trees: int = 120   # number of decision trees
-    criterion: Impurity = Gini()
-    max_depth: int = 10   # maximum number of levels of a decision tree
-    min_size_split: int = 5   # if less, do not split a node
-    ratio_samples: float = 0.7   # sampling with replacement
-    num_random_features: int = int(
-        np.sqrt(dataset.num_features)
-    )   # This number is not chosen at random but represents the number of features to choose at random
-    s_random = RandomForest(
-        num_trees,
-        max_depth,
-        min_size_split,
-        ratio_samples,
-        num_random_features,
-        criterion,
-        False,
-    )
-    p_random = RandomForest(
-        num_trees,
-        max_depth,
-        min_size_split,
-        ratio_samples,
-        num_random_features,
-        criterion,
-        True,
-    )
-    s_extra = ExtraTrees(
-        num_trees,
-        max_depth,
-        min_size_split,
-        ratio_samples,
-        num_random_features,
-        criterion,
-        False,
-    )
-    p_extra = ExtraTrees(
-        num_trees,
-        max_depth,
-        min_size_split,
-        ratio_samples,
-        num_random_features,
-        criterion,
-        True,
-    )
-    sr_result = benchmark(s_random, dataset)
-    pr_result = benchmark(p_random, dataset)
-    se_result = benchmark(s_extra, dataset)
-    pe_result = benchmark(p_extra, dataset)
-    print()
-    print('                   Sequential    |     Paralel   ')
-    print('                -----------------|-----------------')
-    print(f'Random Forest     {sr_result}  |  {pr_result}')
-    print(f'Extra Trees       {se_result}  |  {pe_result}')
+    if args.full_benchmark:
+        test_all(args, dataset)
+    else:
+        test_single(args, dataset)
 
 
-main()
+if __name__ == '__main__':
+    main()
