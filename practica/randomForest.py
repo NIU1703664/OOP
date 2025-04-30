@@ -192,7 +192,6 @@ class RandomForest(Forest):
             values = np.unique(dataset.X[:, idx])
             val: np.float64
             for val in values:
-                assert all(type(k) == np.int64 for k in dataset.y)
                 left_dataset, right_dataset = dataset.split(idx, val)
                 cost = self._CART_cost(left_dataset, right_dataset)   # J(k,v)
                 if cost < minimum_cost:

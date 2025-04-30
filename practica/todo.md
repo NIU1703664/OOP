@@ -14,7 +14,7 @@
 
 - [x] Precision & Performance metrics - Daniel
 
-- [ ] Load MNIST - Kai
+- [x] Load MNIST - Kai
 
 - [ ] MNIST is fairly accurate
 

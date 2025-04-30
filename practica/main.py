@@ -40,10 +40,14 @@ def main():
         case 'iris':
             dataset = Dataset.load_iris()
             logging.info(f'Iris database loaded')
+        case 'mnist':
+            dataset = Dataset.load_MNIST()
+            logging.info(f'MNIST database loaded')
         case _:
             print('Dataset not found, try another option: ')
             print('- sonar')
             print('- iris')
+            print('- mnist')
             return
 
     logging.info('Creating the Random Forest')

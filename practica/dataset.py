@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 import sklearn.datasets
+import pickle
 import numpy.typing as npt
 import logging
 
@@ -22,7 +23,7 @@ class Dataset:
         assert self.X.ndim == 2
         self.y: npt.NDArray[np.int64] = y
         assert self.y.ndim == 1
-        assert all(type(k) == np.int64 for k in y)
+        # assert all(type(k) == np.int64 for k in y)
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features = self.X.shape
@@ -108,3 +109,13 @@ class Dataset:
         # labels: npt.NDArray[np.int64] = np.unique(y)
 
         return cls(X, y)
+
+    @classmethod
+    def load_MNIST(cls) -> Self:
+        with open("./datasets/MNIST/mnist.pkl", "rb") as f:
+            mnist = pickle.load(f, encoding="byte")
+
+        images = np.array(mnist["training_images"])
+        labels = np.array(mnist["training_labels"])
+
+        return cls(images, labels)
