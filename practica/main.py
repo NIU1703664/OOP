@@ -1,6 +1,5 @@
 #!/bin/python3
 # To be able to execute the file standalone
-from secrets import choice
 from randomForest import Forest, RandomForest, ExtraTrees
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy
