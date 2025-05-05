@@ -125,3 +125,20 @@ class Dataset:
         )
 
         return cls(images, labels)
+
+    @classmethod
+    def load_temperatures(cls) -> Self:
+        df = pd.read_csv(
+            'https://raw.githubusercontent.com/jbrownlee/'
+            'Datasets/master/daily-min-temperatures.csv'
+        )
+        day: np.int64 = pd.DatetimeIndex(df.Date).day.to_numpy()   # 1...31
+        month: np.int64 = pd.DatetimeIndex(df.Date).month.to_numpy()   # 1...12
+        year: np.int64 = pd.DatetimeIndex(
+            df.Date
+        ).year.to_numpy()   # 1981...1999
+        X: npt.NDArray[np.int64] = np.vstack(
+            [day, month, year]
+        ).T   # np array of 3 columns
+        y: npt.NDArray[np.float64] = df.Temp.to_numpy()
+        return cls(X, y)
