@@ -4,8 +4,6 @@ import numpy as np
 import numpy.typing as npt
 import logging
 
-logging.basicConfig(level=logging.WARNING)
-
 
 class Node:
     @abstractmethod

@@ -112,10 +112,16 @@ class Dataset:
 
     @classmethod
     def load_MNIST(cls) -> Self:
-        with open("./datasets/MNIST/mnist.pkl", "rb") as f:
-            mnist = pickle.load(f, encoding="byte")
+        with open('./datasets/MNIST/mnist.pkl', 'rb') as f:
+            mnist = pickle.load(f, encoding='byte')
 
-        images = np.array(mnist["training_images"])
-        labels = np.array(mnist["training_labels"])
+        images = np.append(
+            np.array(mnist['training_images']),
+            np.array(mnist['test_images']),
+            axis=0,
+        )
+        labels = np.append(
+            np.array(mnist['training_labels']), np.array(mnist['test_labels'])
+        )
 
         return cls(images, labels)

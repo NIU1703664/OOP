@@ -1,10 +1,10 @@
 #!/bin/python3
+# To be able to execute the file standalone
 from randomForest import Forest, RandomForest, ExtraTrees
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy
 import numpy as np
 import numpy.typing as npt
-import sys
 import logging
 import argparse
 
@@ -16,7 +16,7 @@ ratio_samples: float = 0.8   # sampling with replacement
 ratio_train = 0.7
 
 
-def benchmark(forest: Forest, dataset: Dataset):
+def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, float]:
     num_samples_train: int = int(dataset.num_samples * ratio_train)
     num_samples_test: int = dataset.num_samples - num_samples_train
     idx = np.random.permutation(range(dataset.num_samples))
@@ -55,7 +55,7 @@ def test_single(args, dataset: Dataset):
                 ratio_samples,
                 num_random_features,
                 criterion,
-                args.paralel,
+                args.parallel,
             )
         case 'extra':
             forest = ExtraTrees(
@@ -65,7 +65,7 @@ def test_single(args, dataset: Dataset):
                 ratio_samples,
                 num_random_features,
                 criterion,
-                args.paralel,
+                args.parallel,
             )
         case _:
             print('Invalid architecture selected')
@@ -136,7 +136,7 @@ def test_all(args, dataset: Dataset):
         dataset,
     )
     print('')
-    print('                   Sequential    |     Paralel   ')
+    print('                   Sequential    |     parallel   ')
     print('                -----------------|-----------------')
     print(
         f'Random Forest     {sr_time:2.3f}s, {(100*sr_acc):2.1f}%  |  {pr_time:2.3f}s, {(100*pr_acc):2.1f}% '
@@ -147,42 +147,57 @@ def test_all(args, dataset: Dataset):
 
 
 def main():
-    # add argument
-    parser = argparse.ArgumentParser(description='Random Forest classifier')
+    # CLI Commands
+    parser = argparse.ArgumentParser(
+        description='Random Forest classifier',
+        usage='./main.py [options...] dataset',
+    )
     _ = parser.add_argument(
         'dataset',
-        help='Which dataset to train and test',
+        help='Which dataset to train and test (iris, sonar, mnist)',
     )
     _ = parser.add_argument(
         '-m',
         '--measure',
         default='gini',
-        help='Select purity measure algorithm',
-    )
-    _ = parser.add_argument(
-        '-p',
-        '--paralel',
-        nargs='?',
-        const=True,
-        default=False,
-        help='Build the forest with parallel processing',
+        help='Select purity measure algorithm (gini, entropy)',
     )
     _ = parser.add_argument(
         '-a',
         '--arch',
         default='random',
-        help='Tree architecture',
+        help='Tree architecture (random, extra)',
+    )
+    _ = parser.add_argument(
+        '-p',
+        '--parallel',
+        action='store_true',
+        help='Build the forest with parallel processing',
     )
     _ = parser.add_argument(
         '--full_benchmark',
-        nargs='?',
-        const=True,
-        default=False,
-        help='Compare in a table all parallelization and architecture options, overrides --paralel and --arch',
+        action='store_true',
+        help='Compare in a table all parallelization and architecture options, overrides --parallel and --arch',
+    )
+    _ = parser.add_argument(
+        '--log_level',
+        default='WARN',
+        help='Set log level',
     )
     args = parser.parse_args()
+    log_levels = {
+        'INFO': logging.INFO,
+        'WARN': logging.WARN,
+        'DEBUG': logging.DEBUG,
+    }
+    logging.basicConfig(
+        level=log_levels[args.log_level],
+        format='%(asctime)s - %(levelname)s - %(message)s',
+    )
     if args.dataset == None:
-        print('This program requires an argument')
+        print(
+            'This program requires an argument, use -h or --help for information on how to use this program.'
+        )
         return
 
     logging.info('Starting the program')
@@ -204,9 +219,12 @@ def main():
             print('- iris')
             print('- mnist')
             return
+    logging.info(f'{args.dataset} loaded')
     if args.full_benchmark:
+        logging.info(f'Starting a complete benchmark')
         test_all(args, dataset)
     else:
+        logging.info(f'Testing {args.arch} with {args.parallel} computing')
         test_single(args, dataset)
 
 

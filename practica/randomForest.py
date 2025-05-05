@@ -11,10 +11,6 @@ from dataset import Dataset
 from measure import Impurity
 import logging
 
-logging.basicConfig(
-    level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
 
 class Forest:
     def __init__(
@@ -25,7 +21,7 @@ class Forest:
         ratio_samples: float,
         num_random_features: int,
         criterion: Impurity,
-        paralel: bool,
+        parallel: bool,
     ) -> None:
         self.num_trees: int = num_trees
         self.min_size: int = min_size
@@ -33,7 +29,7 @@ class Forest:
         self.ratio_samples: float = ratio_samples
         self.num_random_features: int = num_random_features
         self.criterion: Impurity = criterion
-        self.paralel: bool = paralel
+        self.parallel: bool = parallel
         self.decision_trees: list[Node] = []
         self.time = 0
         logging.info(f'Starting a Random Forest with {num_trees} trees')
@@ -67,7 +63,7 @@ class Forest:
         # a pair (X,y) is a dataset, with its own responsibilities
         logging.info('Starting the training of the Random Forest')
         dataset = Dataset(X, y)
-        if not self.paralel:
+        if not self.parallel:
             self._make_decision_trees(dataset)
         else:
             self._make_decision_trees_multiprocessing(dataset)
@@ -88,7 +84,7 @@ class Forest:
         self.time = t2 - t1
 
     def _make_decision_trees_multiprocessing(self, dataset: Dataset):
-        print(f'CPU Cores: {multiprocessing.cpu_count()}')
+        logging.info(f'CPU Cores: {multiprocessing.cpu_count()}')
         t1 = time.time()
         with multiprocessing.Pool() as pool:
             self.decision_trees = pool.starmap(
