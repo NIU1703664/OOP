@@ -22,6 +22,17 @@
 
 - [x] Extra-trees - Dani
 
-### For later
+## Milestone 2
+- [ ] Add new impurity - Kai
 
-- Putting everything into a module and using generics again
+- [ ] Change prediction for leaf - Dani
+
+- [ ] Change voting of trees - Dani
+
+- [ ] Load daily_min_temp - Kai
+
+- [ ] Accuracy of regresssion - Dani
+
+- [ ] Put everything in a module and use generics
+
+- [ ] Update UML - Eric
