@@ -226,7 +226,6 @@ if __name__ == '__main__':
         '--log_level',
         default='WARN',
         help='Set log level',
-        choices=['DEBUG', 'INFO', 'DEBUG'],
     )
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
