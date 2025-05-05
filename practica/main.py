@@ -1,5 +1,6 @@
 #!/bin/python3
 # To be able to execute the file standalone
+from secrets import choice
 from randomForest import Forest, RandomForest, ExtraTrees
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy
@@ -7,6 +8,7 @@ import numpy as np
 import numpy.typing as npt
 import logging
 import argparse
+import argcomplete
 
 # Hyperparameters
 num_trees: int = 84   # number of decision trees
@@ -32,21 +34,14 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, float]:
     return (forest.time, accuracy)
 
 
-def test_single(args, dataset: Dataset):
+def test_single(
+    criterion: Impurity, arch: str, parallel: bool, dataset: Dataset
+):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
     )   # This number is not chosen at random but represents the number of features to choose at random
     forest: Forest
-    criterion: Impurity
-    match args.measure:
-        case 'gini':
-            criterion = Gini()
-        case 'entropy':
-            criterion = Entropy()
-        case _:
-            print('Invalid measure selected')
-            return
-    match args.arch:
+    match arch:
         case 'random':
             forest = RandomForest(
                 num_trees,
@@ -55,7 +50,7 @@ def test_single(args, dataset: Dataset):
                 ratio_samples,
                 num_random_features,
                 criterion,
-                args.parallel,
+                parallel,
             )
         case 'extra':
             forest = ExtraTrees(
@@ -65,7 +60,7 @@ def test_single(args, dataset: Dataset):
                 ratio_samples,
                 num_random_features,
                 criterion,
-                args.parallel,
+                parallel,
             )
         case _:
             print('Invalid architecture selected')
@@ -74,19 +69,10 @@ def test_single(args, dataset: Dataset):
     print(f'Time: {time:2.3f}s, Accuracy: {(100*acc):2.1f}%')
 
 
-def test_all(args, dataset: Dataset):
+def test_all(measure: Impurity, dataset: Dataset):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
     )   # This number is not chosen at random but represents the number of features to choose at random
-    criterion: Impurity
-    match args.measure:
-        case 'gini':
-            criterion = Gini()
-        case 'entropy':
-            criterion = Entropy()
-        case _:
-            print('Invalid measure selected')
-            return
     sr_time, sr_acc = benchmark(
         RandomForest(
             num_trees,
@@ -94,7 +80,7 @@ def test_all(args, dataset: Dataset):
             min_size_split,
             ratio_samples,
             num_random_features,
-            criterion,
+            measure,
             False,
         ),
         dataset,
@@ -106,7 +92,7 @@ def test_all(args, dataset: Dataset):
             min_size_split,
             ratio_samples,
             num_random_features,
-            criterion,
+            measure,
             True,
         ),
         dataset,
@@ -118,7 +104,7 @@ def test_all(args, dataset: Dataset):
             min_size_split,
             ratio_samples,
             num_random_features,
-            criterion,
+            measure,
             False,
         ),
         dataset,
@@ -130,7 +116,7 @@ def test_all(args, dataset: Dataset):
             min_size_split,
             ratio_samples,
             num_random_features,
-            criterion,
+            measure,
             True,
         ),
         dataset,
@@ -146,7 +132,60 @@ def test_all(args, dataset: Dataset):
     )
 
 
-def main():
+def main(
+    dataset: str,
+    arch: str,
+    measure: str,
+    full_benchmark: bool,
+    log_level: str,
+    parallel: bool,
+):
+    log_levels = {
+        'INFO': logging.INFO,
+        'WARN': logging.WARN,
+        'DEBUG': logging.DEBUG,
+    }
+    logging.basicConfig(
+        level=log_levels[log_level],
+        format='%(asctime)s - %(levelname)s - %(message)s',
+    )
+    logging.info('Starting the program')
+    logging.info(f'Attemtping to load {dataset}:')
+    data: Dataset
+    match dataset:
+        case 'sonar':
+            data = Dataset.load_sonar()
+            logging.info(f'Sonar database loaded')
+        case 'iris':
+            data = Dataset.load_iris()
+            logging.info(f'Iris database loaded')
+        case 'mnist':
+            data = Dataset.load_MNIST()
+            logging.info(f'MNIST database loaded')
+        case 'temperatures':
+            data = Dataset.load_temperatures()
+            logging.info(f'MNIST database loaded')
+        case _:
+            return
+    logging.info(f'{dataset} loaded')
+    criterion: Impurity
+    match measure:
+        case 'gini':
+            criterion = Gini()
+        case 'entropy':
+            criterion = Entropy()
+        case _:
+            return
+
+    if full_benchmark:
+        logging.info(f'Starting a complete benchmark')
+        test_all(criterion, data)
+    else:
+        logging.info(f'Testing {arch} with {parallel} computing')
+        test_single(criterion, arch, parallel, data)
+
+
+if __name__ == '__main__':
     # CLI Commands
     parser = argparse.ArgumentParser(
         description='Random Forest classifier',
@@ -154,19 +193,22 @@ def main():
     )
     _ = parser.add_argument(
         'dataset',
-        help='Which dataset to train and test (iris, sonar, mnist)',
+        help='Which dataset to train and test',
+        choices=['iris', 'sonar', 'mnist', 'temperatures'],
     )
     _ = parser.add_argument(
         '-m',
         '--measure',
         default='gini',
-        help='Select purity measure algorithm (gini, entropy)',
+        help='Select purity measure algorithm',
+        choices=['gini', 'entropy'],
     )
     _ = parser.add_argument(
         '-a',
         '--arch',
         default='random',
-        help='Tree architecture (random, extra)',
+        help='Tree architecture',
+        choices=['random', 'extra'],
     )
     _ = parser.add_argument(
         '-p',
@@ -184,49 +226,6 @@ def main():
         default='WARN',
         help='Set log level',
     )
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    log_levels = {
-        'INFO': logging.INFO,
-        'WARN': logging.WARN,
-        'DEBUG': logging.DEBUG,
-    }
-    logging.basicConfig(
-        level=log_levels[args.log_level],
-        format='%(asctime)s - %(levelname)s - %(message)s',
-    )
-    if args.dataset == None:
-        print(
-            'This program requires an argument, use -h or --help for information on how to use this program.'
-        )
-        return
-
-    logging.info('Starting the program')
-    logging.info(f'Attemtping to load {args.dataset}:')
-    dataset: Dataset
-    match args.dataset:
-        case 'sonar':
-            dataset = Dataset.load_sonar()
-            logging.info(f'Sonar database loaded')
-        case 'iris':
-            dataset = Dataset.load_iris()
-            logging.info(f'Iris database loaded')
-        case 'mnist':
-            dataset = Dataset.load_MNIST()
-            logging.info(f'MNIST database loaded')
-        case _:
-            print('Dataset not found, try another option: ')
-            print('- sonar')
-            print('- iris')
-            print('- mnist')
-            return
-    logging.info(f'{args.dataset} loaded')
-    if args.full_benchmark:
-        logging.info(f'Starting a complete benchmark')
-        test_all(args, dataset)
-    else:
-        logging.info(f'Testing {args.arch} with {args.parallel} computing')
-        test_single(args, dataset)
-
-
-if __name__ == '__main__':
-    main()
+    main(**vars(args))
