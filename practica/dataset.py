@@ -7,11 +7,6 @@ import pickle
 import numpy.typing as npt
 import logging
 
-# Configurate the logging
-logging.basicConfig(
-    level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
 
 class Dataset:
     def __init__(

@@ -29,3 +29,16 @@ class Entropy(Impurity):
         counts = np.bincount(dataset.y)
         probs = counts / dataset.num_samples
         return -np.sum(probs * np.log(probs, where=(probs != 0)))
+
+
+class SSE(Impurity):
+    @override
+    def purity(self, dataset: Dataset) -> np.float64:
+        avg: np.float64 = np.sum(dataset.y) / np.dtype('int64').type(
+            dataset.num_samples
+        )
+        sse: np.float64 = np.sum(
+            np.array(map(lambda x: ((x - avg) * (x - avg)), dataset.y))
+        )
+
+        return sse
