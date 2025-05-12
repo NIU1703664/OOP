@@ -26,13 +26,13 @@
 
 - [x] Add new impurity - Kai
 
-- [ ] Change prediction for leaf - Dani
+- [x] Change prediction for leaf - Dani
 
-- [ ] Change voting of trees - Dani
+- [x] Change voting of trees - Dani
 
 - [x] Load daily_min_temp - Kai
 
-- [ ] Accuracy of regresssion - Dani
+- [x] Accuracy of regresssion - Dani
 
 - [ ] Put everything in a module and use generics
 

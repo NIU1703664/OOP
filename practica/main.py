@@ -1,6 +1,6 @@
 #!/bin/python3
 # To be able to execute the file standalone
-from randomForest import Classifier, Forest, RandomForest, ExtraTrees, Regressor
+from randomForest import Classifier, Forest, Regressor
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy, SSE
 from splitting import Split, ExtraSplit, RandomSplit
@@ -10,15 +10,21 @@ import logging
 import argparse
 import argcomplete
 
-# Hyperparameters
-num_trees: int = 84   # number of decision trees
-max_depth: int = 20   # maximum number of levels of a decision tree
-min_size_split: int = 5   # if less, do not split a node
-ratio_samples: float = 0.8   # sampling with replacement
+# Hyperparameters small
+# num_trees: int = 84   # number of decision trees
+# max_depth: int = 20   # maximum number of levels of a decision tree
+# min_size_split: int = 5   # if less, do not split a node
+# ratio_samples: float = 0.8   # sampling with replacement
+# ratio_train = 0.7
+# Hyperparameters bigg
+num_trees: int = 12  # number of decision trees
+max_depth: int = 5   # maximum number of levels of a decision tree
+min_size_split: int = 20   # if less, do not split a node
+ratio_samples: float = 0.4   # sampling with replacement
 ratio_train = 0.7
 
 
-def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, float]:
+def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
     num_samples_train: int = int(dataset.num_samples * ratio_train)
     num_samples_test: int = dataset.num_samples - num_samples_train
     idx = np.random.permutation(range(dataset.num_samples))
@@ -28,10 +34,18 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, float]:
     X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
 
     forest.fit(X_train, y_train)
-    ypred: npt.NDArray[np.int64] = forest.predict(X_test)
-    hits: int = np.sum(ypred == y_test)
-    accuracy: float = hits / float(num_samples_test)
-    return (forest.time, accuracy)
+    ypred: npt.NDArray[np.int64] |npt.NDArray[np.float64] = forest.predict(X_test)
+    if type(forest) == Regressor:
+        assert(type(ypred[0]) == np.float64)
+        accuracy: float = np.sqrt(np.sum( (ypred- y_test)**2) / num_samples_test)
+        result_str: str  = f'{(accuracy):2.1f} rmse'
+
+    else:
+        assert(type(ypred[0]) == np.int64)
+        hits: int = np.sum(ypred == y_test)
+        accuracy: float = hits / float(num_samples_test)
+        result_str: str  = f'{(100*accuracy):2.1f}%'
+    return (forest.time, result_str)
 
 
 def test_single(
@@ -58,7 +72,7 @@ def test_single(
         split,
         parallel,
     ), dataset)
-    print(f'Time: {time:2.3f}s, Accuracy: {(100*acc):2.1f}%')
+    print(f'Time: {time:2.3f}s, Accuracy: {acc}')
 
 
 def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
@@ -145,6 +159,7 @@ def main(
     logging.info('Starting the program')
     logging.info(f'Attemtping to load {dataset}:')
     data: Dataset
+    forest: type[Forest]= Classifier
     match dataset:
         case 'sonar':
             data = Dataset.load_sonar()
@@ -157,12 +172,13 @@ def main(
             logging.info(f'MNIST database loaded')
         case 'temperatures':
             data = Dataset.load_temperatures()
+            forest = Regressor
+            measure = 'sse'
             logging.info(f'Min_Temperatures database loaded')
         case _:
             return
     logging.info(f'{dataset} loaded')
     criterion: Impurity
-    forest: type[Forest]= Classifier
     match measure:
         case 'gini':
             criterion = Gini()
@@ -170,7 +186,6 @@ def main(
             criterion = Entropy()
         case 'sse':
             criterion = SSE()
-            forest = Regressor
         case _:
             return
 

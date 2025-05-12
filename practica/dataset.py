@@ -40,7 +40,8 @@ class Dataset:
         ret: np.int64 = values[ind]
         return ret
 
-    def average(self) -> np.float64:
+    def label_average(self) -> np.float64:
+        if self.num_samples == 0: return np.dtype('float64').type(0.0)
         return np.sum(self.y, dtype=float64) / np.dtype('int64').type(
             self.num_samples
         )

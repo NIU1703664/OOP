@@ -9,7 +9,6 @@ from numpy.typing import NDArray
 from decisionTree import Leaf, Parent, Node
 from dataset import Dataset
 from splitting import Split
-from measure import Impurity
 import logging
 
 
@@ -36,30 +35,6 @@ class Forest:
         self.time = 0
         logging.info(f'Starting a Random Forest with {num_trees} trees')
 
-    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
-        assert X.ndim == 2
-        nrows = X.shape[0]
-        result: npt.NDArray[np.int64] = np.zeros(nrows, dtype=np.int64)
-        assert result.ndim == 1
-        for i in range(nrows):
-            max_value = 0
-            max_label: np.int64 = None
-            label_count: dict[np.int64, int] = dict()
-            for tree in self.decision_trees:
-                predict: np.int64 = tree.predict(X[i, :])
-                if predict in label_count:
-                    label_count[predict] += 1
-                else:
-                    label_count[predict] = 1
-
-                if label_count[predict] > max_value:
-                    max_value = label_count[predict]
-                    max_label = predict
-            # if max_label == None:
-            #     logging.error("Forest hasn''t been fit yet")
-            #     raise Exception("Forest hasn''t been fit yet")
-            result[i] = max_label
-        return result
 
     def fit(self, X: NDArray[np.float64], y: NDArray[np.int64]):
         # a pair (X,y) is a dataset, with its own responsibilities
@@ -146,6 +121,9 @@ class Forest:
             node.left_child = self._make_node(left_dataset, depth + 1)
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
+    @abstractmethod
+    def predict(self, X: npt.NDArray[np.float64]) ->  npt.NDArray[np.float64] | npt.NDArray[np.int64] :
+        pass
 
 class Classifier(Forest):
     @override
@@ -154,6 +132,31 @@ class Classifier(Forest):
             label = dataset.most_frequent_label()
             # logging.info(f'Creating a leaf with label {label}')
             return Leaf(label)
+    @override
+    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
+        assert X.ndim == 2
+        nrows = X.shape[0]
+        result: npt.NDArray[np.int64] = np.zeros(nrows, dtype=np.int64)
+        assert result.ndim == 1
+        for i in range(nrows):
+            max_value = 0
+            max_label: np.int64 = None
+            label_count: dict[np.int64, int] = dict()
+            for tree in self.decision_trees:
+                predict: np.int64 = tree.predict(X[i, :])
+                if predict in label_count:
+                    label_count[predict] += 1
+                else:
+                    label_count[predict] = 1
+
+                if label_count[predict] > max_value:
+                    max_value = label_count[predict]
+                    max_label = predict
+            # if max_label == None:
+            #     logging.error("Forest hasn''t been fit yet")
+            #     raise Exception("Forest hasn''t been fit yet")
+            result[i] = max_label
+        return result
     
         
 class Regressor(Forest):
@@ -165,3 +168,11 @@ class Regressor(Forest):
             return Leaf(label)
     
         
+    @override
+    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        assert X.ndim == 2
+        nrows = X.shape[0]
+        result: npt.NDArray[np.int64] = np.zeros(nrows, dtype=np.int64)
+        assert result.ndim == 1
+        result = np.array([ np.sum([ tree.predict(X[i, :]) for tree in self.decision_trees]) / self.num_trees for i in range(nrows)] )
+        return result
