@@ -24,13 +24,13 @@
 
 ## Milestone 2
 
-- [ ] Add new impurity - Kai
+- [x] Add new impurity - Kai
 
 - [ ] Change prediction for leaf - Dani
 
 - [ ] Change voting of trees - Dani
 
-- [ ] Load daily_min_temp - Kai
+- [x] Load daily_min_temp - Kai
 
 - [ ] Accuracy of regresssion - Dani
 

@@ -163,7 +163,7 @@ def main(
             logging.info(f'MNIST database loaded')
         case 'temperatures':
             data = Dataset.load_temperatures()
-            logging.info(f'MNIST database loaded')
+            logging.info(f'Min_Temperatures database loaded')
         case _:
             return
     logging.info(f'{dataset} loaded')
@@ -173,6 +173,8 @@ def main(
             criterion = Gini()
         case 'entropy':
             criterion = Entropy()
+        case 'sse'
+            criterion = SSE()
         case _:
             return
 
@@ -200,7 +202,7 @@ if __name__ == '__main__':
         '--measure',
         default='gini',
         help='Select purity measure algorithm',
-        choices=['gini', 'entropy'],
+        choices=['gini', 'entropy', 'sse'],
     )
     _ = parser.add_argument(
         '-a',
