@@ -34,9 +34,7 @@ class Entropy(Impurity):
 class SSE(Impurity):
     @override
     def purity(self, dataset: Dataset) -> np.float64:
-        avg: np.float64 = np.sum(dataset.y) / np.dtype('int64').type(
-            dataset.num_samples
-        )
+        avg: np.float64 = dataset.average()
         sse: np.float64 = np.sum(
             np.array(list(map(lambda x: ((x - avg) * (x - avg)), dataset.y))),
             dtype=np.float64,

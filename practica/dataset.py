@@ -1,6 +1,7 @@
 from typing import Self, TypeVar, Generic
 import math
 import numpy as np
+from numpy.matlib import float64
 import pandas as pd
 import sklearn.datasets
 import pickle
@@ -38,6 +39,11 @@ class Dataset:
         ind = np.argmax(counts)
         ret: np.int64 = values[ind]
         return ret
+
+    def average(self) -> np.float64:
+        return np.sum(self.y, dtype=float64) / np.dtype('int64').type(
+            self.num_samples
+        )
 
     def split(
         self, feature_index: np.int64, value: np.float64
