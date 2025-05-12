@@ -4,7 +4,7 @@ import tqdm
 import time
 import numpy.typing as npt
 import multiprocessing
-from typing import Generic
+from typing import Generic, override
 from numpy.typing import NDArray
 from decisionTree import Leaf, Parent, Node
 from dataset import Dataset
@@ -115,11 +115,9 @@ class Forest:
             node = self._make_parent_or_leaf(dataset, depth)
         return node
 
+    @abstractmethod
     def _make_leaf(self, dataset: Dataset) -> Leaf:
-        # label = most frequent class in dataset
-        label = dataset.most_frequent_label()
-        # logging.info(f'Creating a leaf with label {label}')
-        return Leaf(label)
+        pass
 
     def _make_parent_or_leaf(self, dataset: Dataset, depth: int) -> Node:
         # select a random subset of features, to make trees more diverse
@@ -149,3 +147,21 @@ class Forest:
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
 
+class Classifier(Forest):
+    @override
+    def _make_leaf(self, dataset: Dataset) -> Leaf:
+            # label = most frequent class in dataset
+            label = dataset.most_frequent_label()
+            # logging.info(f'Creating a leaf with label {label}')
+            return Leaf(label)
+    
+        
+class Regressor(Forest):
+    @override
+    def _make_leaf(self, dataset: Dataset) -> Leaf:
+            # label = most frequent class in dataset
+            label = dataset.label_average()
+            # logging.info(f'Creating a leaf with label {label}')
+            return Leaf(label)
+    
+        
