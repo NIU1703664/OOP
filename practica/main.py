@@ -2,7 +2,7 @@
 # To be able to execute the file standalone
 from randomForest import Forest, RandomForest, ExtraTrees
 from dataset import Dataset
-from measure import Impurity, Gini, Entropy
+from measure import Impurity, Gini, Entropy, SSE
 import numpy as np
 import numpy.typing as npt
 import logging
@@ -173,7 +173,7 @@ def main(
             criterion = Gini()
         case 'entropy':
             criterion = Entropy()
-        case 'sse'
+        case 'sse':
             criterion = SSE()
         case _:
             return

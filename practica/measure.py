@@ -38,7 +38,8 @@ class SSE(Impurity):
             dataset.num_samples
         )
         sse: np.float64 = np.sum(
-            np.array(map(lambda x: ((x - avg) * (x - avg)), dataset.y))
+            np.array(list(map(lambda x: ((x - avg) * (x - avg)), dataset.y))),
+            dtype=np.float64,
         )
 
         return sse
