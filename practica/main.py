@@ -1,8 +1,9 @@
 #!/bin/python3
 # To be able to execute the file standalone
-from randomForest import Forest, RandomForest, ExtraTrees
+from randomForest import Classifier, Forest, RandomForest, ExtraTrees, Regressor
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy, SSE
+from splitting import Split, ExtraSplit, RandomSplit
 import numpy as np
 import numpy.typing as npt
 import logging
@@ -34,88 +35,81 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, float]:
 
 
 def test_single(
-    criterion: Impurity, arch: str, parallel: bool, dataset: Dataset
+    forest: type[Forest], criterion: Impurity, arch: str, parallel: bool, dataset: Dataset
 ):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
     )   # This number is not chosen at random but represents the number of features to choose at random
-    forest: Forest
+    split: Split
     match arch:
         case 'random':
-            forest = RandomForest(
-                num_trees,
-                max_depth,
-                min_size_split,
-                ratio_samples,
-                num_random_features,
-                criterion,
-                parallel,
-            )
+                split = RandomSplit(criterion)
         case 'extra':
-            forest = ExtraTrees(
-                num_trees,
-                max_depth,
-                min_size_split,
-                ratio_samples,
-                num_random_features,
-                criterion,
-                parallel,
-            )
+                split = ExtraSplit(criterion)
         case _:
             print('Invalid architecture selected')
             return
-    time, acc = benchmark(forest, dataset)
+    time, acc = benchmark(forest(
+        num_trees,
+        max_depth,
+        min_size_split,
+        ratio_samples,
+        num_random_features,
+        split,
+        parallel,
+    ), dataset)
     print(f'Time: {time:2.3f}s, Accuracy: {(100*acc):2.1f}%')
 
 
-def test_all(measure: Impurity, dataset: Dataset):
+def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
     )   # This number is not chosen at random but represents the number of features to choose at random
+    extra_split, random_split = ExtraSplit(measure), RandomSplit(measure)
     sr_time, sr_acc = benchmark(
-        RandomForest(
+        forest(
             num_trees,
             max_depth,
             min_size_split,
             ratio_samples,
             num_random_features,
-            measure,
+            random_split,
             False,
         ),
         dataset,
     )
     pr_time, pr_acc = benchmark(
-        RandomForest(
+        forest(
             num_trees,
             max_depth,
             min_size_split,
             ratio_samples,
             num_random_features,
-            measure,
+            random_split,
             True,
         ),
         dataset,
     )
     se_time, se_acc = benchmark(
-        ExtraTrees(
+        forest(
             num_trees,
             max_depth,
             min_size_split,
             ratio_samples,
             num_random_features,
-            measure,
+            extra_split,
             False,
         ),
         dataset,
     )
     pe_time, pe_acc = benchmark(
-        ExtraTrees(
+        forest(
             num_trees,
             max_depth,
             min_size_split,
             ratio_samples,
             num_random_features,
-            measure,
+            extra_split,
             True,
         ),
         dataset,
@@ -124,7 +118,7 @@ def test_all(measure: Impurity, dataset: Dataset):
     print('                   Sequential    |     parallel   ')
     print('                -----------------|-----------------')
     print(
-        f'Random Forest     {sr_time:2.3f}s, {(100*sr_acc):2.1f}%  |  {pr_time:2.3f}s, {(100*pr_acc):2.1f}% '
+        f'Random forest     {sr_time:2.3f}s, {(100*sr_acc):2.1f}%  |  {pr_time:2.3f}s, {(100*pr_acc):2.1f}% '
     )
     print(
         f'Extra Trees       {se_time:2.3f}s, {(100*se_acc):2.1f}%  |  {pe_time:2.3f}s, {(100*pe_acc):2.1f}% '
@@ -168,6 +162,7 @@ def main(
             return
     logging.info(f'{dataset} loaded')
     criterion: Impurity
+    forest: type[Forest]= Classifier
     match measure:
         case 'gini':
             criterion = Gini()
@@ -175,15 +170,16 @@ def main(
             criterion = Entropy()
         case 'sse':
             criterion = SSE()
+            forest = Regressor
         case _:
             return
 
     if full_benchmark:
         logging.info(f'Starting a complete benchmark')
-        test_all(criterion, data)
+        test_all(forest, criterion, data)
     else:
         logging.info(f'Testing {arch} with {parallel} computing')
-        test_single(criterion, arch, parallel, data)
+        test_single(forest, criterion, arch, parallel, data)
 
 
 if __name__ == '__main__':
