@@ -1,0 +1,71 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam noteFontSize 11
+
+' Interfaz base
+abstract class Plot {
+    {abstract} + plot(x: float, y: float)
+}
+
+' Decorador abstracto
+class PlotDecorator {
+    - _next_plot: Plot
+    + plot(x: float, y: float)
+}
+
+' Clases concretas
+class PlotBasic {
+    + plot(x: float, y: float)
+}
+
+class PlotTitle {
+    - title: String
+    + plot(x: float, y: float)
+}
+
+class PlotGrid {
+    + plot(x: float, y: float)
+}
+
+class PlotLegend {
+    + plot(x: float, y: float)
+}
+
+class PlotLabels {
+    - label_x: String
+    - label_y: String
+    + plot(x: float, y: float)
+}
+
+class PlotSize {
+    - width: float
+    - height: float
+    + plot(x: float, y: float)
+}
+
+class PlotMean {
+    + plot(x: float, y: float)
+}
+
+class PlotGlobalExtrema {
+    + plot(x: float, y: float)
+}
+
+class PlotLocalExtrema {
+    + plot(x: float, y: float)
+}
+
+' Relaciones
+Plot <|-- PlotDecorator
+Plot <|-- PlotBasic
+
+PlotDecorator <|-- PlotTitle
+PlotDecorator <|-- PlotGrid
+PlotDecorator <|-- PlotLegend
+PlotDecorator <|-- PlotLabels
+PlotDecorator <|-- PlotSize
+PlotDecorator <|-- PlotMean
+PlotDecorator <|-- PlotGlobalExtrema
+PlotDecorator <|-- PlotLocalExtrema
+@enduml
+
