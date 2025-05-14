@@ -14,26 +14,51 @@ class Entropy {
   + purity(dataset: Dataset): float
 }
 
+class SSE {
+  + purity(dataset: Dataset): float
+}
+
+Impurity <|-- Gini
+Impurity <|-- Entropy
+Impurity <|-- SSE
+
+abstract class Split {
+  - criterion: Impurity
+  {abstract}+ _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+  + _CART_cost(left: Dataset, right: Dataset): float
+}
+
+class RandomSplit {
+  + _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+}
+
+class ExtraSplit {
+  + _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+}
+
 class Dataset {
   - X: float[][]
-  - y: int[]
+  - y: int[] | float[]
   - num_samples: int
   - num_features: int
+  
   + random_sampling(ratio: float): Dataset
   + most_frequent_label(): int
+  + label_average(): float
   + split(feature: int, value: float): tuple[Dataset, Dataset]
   + load_sonar(): Dataset {static}
   + load_iris(): Dataset {static}
   + load_MNIST(): Dataset {static}
+  + load_temperatures(): Dataset {static}
 }
 
 interface Node {
-  {abstract}+ predict(row: float[]): int
+  {abstract}+ predict(row: float[]): int | float
 }
 
 class Leaf {
-  - label: int
-  + predict(row: float[]): int
+  - label: int | float
+  + predict(row: float[]): int | float
 }
 
 class Parent {
@@ -41,7 +66,7 @@ class Parent {
   - threshold: float
   - left_child: Node
   - right_child: Node
-  + predict(row: float[]): int
+  + predict(row: float[]): int | float
 }
 
 abstract class Forest {
@@ -50,37 +75,41 @@ abstract class Forest {
   - max_depth: int
   - ratio_samples: float
   - num_random_features: int
-  - criterion: Impurity
-  - paralel: bool
+  - split: Split
+  - parallel: bool
   - time: float
   - decision_trees: list<Node>
-  + fit(X: float[][], y: int[]): void
-  + predict(X: float[][]): int[]
-  # {abstract} _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+  
+  + fit(X: float[][], y: int[] | float[]): void
+  {abstract}+ predict(X: float[][]): int[] | float[]
   # _make_node(dataset: Dataset, depth: int): Node
-  # _make_leaf(dataset: Dataset): Leaf
+  {abstract}# _make_leaf(dataset: Dataset): Leaf
   # _make_parent_or_leaf(dataset: Dataset, depth: int): Node
-  # _CART_cost(left: Dataset, right: Dataset): float
+  # _make_decision_trees(dataset: Dataset)
+  # _make_decision_trees_multiprocessing(dataset: Dataset)
 }
 
-class RandomForest {
-  # _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+class Classifier {
+  + _make_leaf(dataset: Dataset): Leaf
+  + predict(X: float[][]): int[]
 }
 
-class ExtraTrees {
-  # _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
+class Regressor {
+  + _make_leaf(dataset: Dataset): Leaf
+  + predict(X: float[][]): float[]
 }
 
-Impurity <|-- Gini
-Impurity <|-- Entropy
+Forest <|-- Classifier
+Forest <|-- Regressor
+Forest *-right-> Node : decision_trees
+Forest --> Split : split strategy
+Forest --> Dataset : uses
+Split o--> Impurity : criterion
 Node <|-- Leaf
 Node <|-- Parent
 Parent *-left-> Node
 Parent *-right-> Node
-Forest *-right-> Node : decision_trees
-Forest o--> Impurity : criterion
-Forest --> Dataset : uses
-Forest <|-- RandomForest
-Forest <|-- ExtraTrees
+Split <|-- RandomSplit
+Split <|-- ExtraSplit
 
 @enduml
