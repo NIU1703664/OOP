@@ -1,0 +1,9 @@
+The Plot_Decorator code is based on the Decorator design pattern. Each class represents a different feature that can be added to a plot, 
+and all of them inherit from PlotDecorator, which itself inherits from the abstract class Plot.
+
+Each decorator adds a specific visual element to the graph, such as a title, grid, labels, extrema markers, etc. 
+At the end of the code, we test the implementation using the same examples provided in the presentation.
+
+This way, several different plots are shown—each with its own combination of decorations. (To view the next plot, the previous one must be closed.)
+
+To implement the different decorators, we reused code from the plot_with_options function that was given in the presentation.
