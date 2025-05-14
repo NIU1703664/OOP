@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import numpy as np
 from scipy.sparse import data
 from dataset import Dataset
@@ -7,7 +7,7 @@ from typing import override
 # import logging
 
 
-class Impurity:
+class Impurity(ABC):
     @abstractmethod
     def purity(self, dataset: Dataset) -> np.float64:
         pass

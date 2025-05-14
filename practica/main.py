@@ -34,22 +34,30 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
     X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
 
     forest.fit(X_train, y_train)
-    ypred: npt.NDArray[np.int64] |npt.NDArray[np.float64] = forest.predict(X_test)
+    ypred: npt.NDArray[np.int64] | npt.NDArray[np.float64] = forest.predict(
+        X_test
+    )
     if type(forest) == Regressor:
-        assert(type(ypred[0]) == np.float64)
-        accuracy: float = np.sqrt(np.sum( (ypred- y_test)**2) / num_samples_test)
-        result_str: str  = f'{(accuracy):2.1f} rmse'
+        assert type(ypred[0]) == np.float64
+        accuracy: float = np.sqrt(
+            np.sum((ypred - y_test) ** 2) / num_samples_test
+        )
+        result_str: str = f'{(accuracy):2.1f} rmse'
 
     else:
-        assert(type(ypred[0]) == np.int64)
+        assert type(ypred[0]) == np.int64
         hits: int = np.sum(ypred == y_test)
         accuracy: float = hits / float(num_samples_test)
-        result_str: str  = f'{(100*accuracy):2.1f}%'
+        result_str: str = f'{(100*accuracy):2.1f}%'
     return (forest.time, result_str)
 
 
 def test_single(
-    forest: type[Forest], criterion: Impurity, arch: str, parallel: bool, dataset: Dataset
+    forest: type[Forest],
+    criterion: Impurity,
+    arch: str,
+    parallel: bool,
+    dataset: Dataset,
 ):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
@@ -57,21 +65,24 @@ def test_single(
     split: Split
     match arch:
         case 'random':
-                split = RandomSplit(criterion)
+            split = RandomSplit(criterion)
         case 'extra':
-                split = ExtraSplit(criterion)
+            split = ExtraSplit(criterion)
         case _:
             print('Invalid architecture selected')
             return
-    time, acc = benchmark(forest(
-        num_trees,
-        max_depth,
-        min_size_split,
-        ratio_samples,
-        num_random_features,
-        split,
-        parallel,
-    ), dataset)
+    time, acc = benchmark(
+        forest(
+            num_trees,
+            max_depth,
+            min_size_split,
+            ratio_samples,
+            num_random_features,
+            split,
+            parallel,
+        ),
+        dataset,
+    )
     print(f'Time: {time:2.3f}s, Accuracy: {acc}')
 
 
@@ -132,10 +143,10 @@ def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
     print('                   Sequential    |     parallel   ')
     print('                -----------------|-----------------')
     print(
-        f'Random forest     {sr_time:2.3f}s, {(100*sr_acc):2.1f}%  |  {pr_time:2.3f}s, {(100*pr_acc):2.1f}% '
+        f'Random forest     {sr_time:2.3f}s, {sr_acc}  |  {pr_time:2.3f}s, {pr_acc}'
     )
     print(
-        f'Extra Trees       {se_time:2.3f}s, {(100*se_acc):2.1f}%  |  {pe_time:2.3f}s, {(100*pe_acc):2.1f}% '
+        f'Extra Trees       {se_time:2.3f}s, {se_acc}  |  {pe_time:2.3f}s, {pe_acc}'
     )
 
 
@@ -159,7 +170,7 @@ def main(
     logging.info('Starting the program')
     logging.info(f'Attemtping to load {dataset}:')
     data: Dataset
-    forest: type[Forest]= Classifier
+    forest: type[Forest] = Classifier
     match dataset:
         case 'sonar':
             data = Dataset.load_sonar()

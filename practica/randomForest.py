@@ -12,7 +12,6 @@ from splitting import Split
 import logging
 
 
-
 class Forest:
     def __init__(
         self,
@@ -34,7 +33,6 @@ class Forest:
         self.decision_trees: list[Node] = []
         self.time = 0
         logging.info(f'Starting a Random Forest with {num_trees} trees')
-
 
     def fit(self, X: NDArray[np.float64], y: NDArray[np.int64]):
         # a pair (X,y) is a dataset, with its own responsibilities
@@ -121,17 +119,22 @@ class Forest:
             node.left_child = self._make_node(left_dataset, depth + 1)
             node.right_child = self._make_node(right_dataset, depth + 1)
         return node
+
     @abstractmethod
-    def predict(self, X: npt.NDArray[np.float64]) ->  npt.NDArray[np.float64] | npt.NDArray[np.int64] :
+    def predict(
+        self, X: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64] | npt.NDArray[np.int64]:
         pass
+
 
 class Classifier(Forest):
     @override
     def _make_leaf(self, dataset: Dataset) -> Leaf:
-            # label = most frequent class in dataset
-            label = dataset.most_frequent_label()
-            # logging.info(f'Creating a leaf with label {label}')
-            return Leaf(label)
+        # label = most frequent class in dataset
+        label = dataset.most_frequent_label()
+        # logging.info(f'Creating a leaf with label {label}')
+        return Leaf(label)
+
     @override
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.int64]:
         assert X.ndim == 2
@@ -157,22 +160,27 @@ class Classifier(Forest):
             #     raise Exception("Forest hasn''t been fit yet")
             result[i] = max_label
         return result
-    
-        
+
+
 class Regressor(Forest):
     @override
     def _make_leaf(self, dataset: Dataset) -> Leaf:
-            # label = most frequent class in dataset
-            label = dataset.label_average()
-            # logging.info(f'Creating a leaf with label {label}')
-            return Leaf(label)
-    
-        
+        # label = most frequent class in dataset
+        label = dataset.label_average()
+        # logging.info(f'Creating a leaf with label {label}')
+        return Leaf(label)
+
     @override
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         assert X.ndim == 2
         nrows = X.shape[0]
         result: npt.NDArray[np.int64] = np.zeros(nrows, dtype=np.int64)
         assert result.ndim == 1
-        result = np.array([ np.sum([ tree.predict(X[i, :]) for tree in self.decision_trees]) / self.num_trees for i in range(nrows)] )
+        result = np.array(
+            [
+                np.sum([tree.predict(X[i, :]) for tree in self.decision_trees])
+                / self.num_trees
+                for i in range(nrows)
+            ]
+        )
         return result

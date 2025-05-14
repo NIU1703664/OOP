@@ -1,13 +1,17 @@
-from abc import abstractmethod
+from __future__ import annotations
+from abc import ABC, abstractmethod
 from typing import override
 import numpy as np
 import numpy.typing as npt
-import logging
 
 
-class Node:
+class Node(ABC):
     @abstractmethod
     def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
+        pass
+
+    @abstractmethod
+    def accept(self, visitor: NodeVisitor):
         pass
 
 
@@ -20,6 +24,10 @@ class Leaf(Node):
     @override
     def predict(self, row: npt.NDArray[np.float64]) -> np.int64:
         return self.label
+
+    @override
+    def accept(self, visitor: NodeVisitor):
+        visitor.visitLeaf(self)
 
 
 class Parent(Node):
@@ -40,3 +48,37 @@ class Parent(Node):
             return self.left_child.predict(row)
         else:
             return self.right_child.predict(row)
+
+    @override
+    def accept(self, visitor: NodeVisitor):
+        visitor.visitParent(self)
+
+
+class NodeVisitor(ABC):
+    @abstractmethod
+    def visitLeaf(self, node: Leaf):
+        pass
+
+    @abstractmethod
+    def visitParent(self, node: Parent):
+        pass
+
+
+class PrintNode(NodeVisitor):
+    def __init__(self, depth: int) -> None:
+        super().__init__()
+        self.depth: int = depth
+
+    @override
+    def visitLeaf(self, node: Leaf):
+        print('    ' * self.depth, f'leaf, {node.label}')
+
+    @override
+    def visitParent(self, node: Parent):
+        print(
+            '    ' * self.depth,
+            f'parent - {node.feature_index}, {node.threshold}',
+        )
+        self.depth += 1
+        node.left_child.accept(self)
+        node.left_child.accept(self)
