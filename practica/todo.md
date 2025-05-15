@@ -37,3 +37,5 @@
 - [ ] Put everything in a module and use generics
 
 - [ ] Update UML - Eric
+
+- [ ] Feature importance - Kai
