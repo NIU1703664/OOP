@@ -16,8 +16,8 @@ class Forest:
     def __init__(
         self,
         num_trees: int,
-        min_size: int,
         max_depth: int,
+        min_size: int,
         ratio_samples: float,
         num_random_features: int,
         split: Split,
@@ -82,10 +82,12 @@ class Forest:
             or dataset.num_samples <= self.min_size
             or len(np.unique(dataset.y)) == 1
         ):
+            print(depth, self.max_depth)
             # last condition is true if all samples belong to the same class
             node = self._make_leaf(dataset)
         else:
             node = self._make_parent_or_leaf(dataset, depth)
+            print(depth, self.max_depth)
         return node
 
     @abstractmethod

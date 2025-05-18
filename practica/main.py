@@ -18,7 +18,7 @@ import argcomplete
 # ratio_samples: float = 0.8   # sampling with replacement
 # ratio_train = 0.7
 # Hyperparameters bigg
-num_trees: int = 12  # number of decision trees
+num_trees: int = 1  # number of decision trees
 max_depth: int = 5   # maximum number of levels of a decision tree
 min_size_split: int = 20   # if less, do not split a node
 ratio_samples: float = 0.4   # sampling with replacement
@@ -80,6 +80,7 @@ def test_single(
         case _:
             print('Invalid architecture selected')
             return
+
     time, acc = benchmark(
         forest(
             num_trees,
@@ -98,7 +99,7 @@ def test_single(
 def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
-    )   # This number is not chosen at random but represents the number of features to choose at random
+    )   # This number is not
     extra_split, random_split = ExtraSplit(measure), RandomSplit(measure)
     sr_time, sr_acc = benchmark(
         forest(
