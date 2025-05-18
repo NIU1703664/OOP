@@ -52,6 +52,8 @@ class Parent(Node):
     @override
     def accept(self, visitor: NodeVisitor):
         visitor.visitParent(self)
+        self.left_child.accept(visitor)
+        self.right_child.accept(visitor)
 
 
 class NodeVisitor(ABC):

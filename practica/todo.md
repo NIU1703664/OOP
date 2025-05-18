@@ -38,4 +38,4 @@
 
 - [ ] Update UML - Eric
 
-- [ ] Feature importance - Kai
+- [ ] Feature importance - Dani
