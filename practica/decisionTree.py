@@ -52,8 +52,6 @@ class Parent(Node):
     @override
     def accept(self, visitor: NodeVisitor):
         visitor.visitParent(self)
-        self.left_child.accept(visitor)
-        self.right_child.accept(visitor)
 
 
 class NodeVisitor(ABC):
@@ -73,14 +71,14 @@ class PrintNode(NodeVisitor):
 
     @override
     def visitLeaf(self, node: Leaf):
-        print(self.depth, f'leaf, {node.label}')
+        print('\t' * self.depth, f'leaf, {node.label}')
 
     @override
     def visitParent(self, node: Parent):
         print(
-            self.depth,
+            '\t' * self.depth,
             f'parent - {node.feature_index}, {node.threshold}',
         )
-        self.depth += 1
-        node.left_child.accept(self)
-        node.left_child.accept(self)
+        deeperVisitor = PrintNode(self.depth + 1)
+        node.left_child.accept(deeperVisitor)
+        node.right_child.accept(deeperVisitor)

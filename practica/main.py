@@ -12,17 +12,25 @@ import argparse
 import argcomplete
 
 # Hyperparameters small
-# num_trees: int = 84   # number of decision trees
-# max_depth: int = 20   # maximum number of levels of a decision tree
-# min_size_split: int = 5   # if less, do not split a node
-# ratio_samples: float = 0.8   # sampling with replacement
-# ratio_train = 0.7
-# Hyperparameters bigg
-num_trees: int = 1  # number of decision trees
-max_depth: int = 5   # maximum number of levels of a decision tree
-min_size_split: int = 20   # if less, do not split a node
-ratio_samples: float = 0.4   # sampling with replacement
+num_trees: int = 84   # number of decision trees
+max_depth: int = 20   # maximum number of levels of a decision tree
+min_size_split: int = 5   # if less, do not split a node
+ratio_samples: float = 0.8   # sampling with replacement
 ratio_train = 0.7
+
+# Hyperparameters big
+# num_trees: int = 42  # number of decision trees
+# max_depth: int = 20   # maximum number of levels of a decision tree
+# min_size_split: int = 20   # if less, do not split a node
+# ratio_samples: float = 0.4   # sampling with replacement
+# ratio_train = 0.7
+
+# Hyperparameters debug
+# num_trees: int = 1  # number of decision trees
+# max_depth: int = 20   # maximum number of levels of a decision tree
+# min_size_split: int = 20   # if less, do not split a node
+# ratio_samples: float = 0.4   # sampling with replacement
+# ratio_train = 0.7
 
 
 def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
@@ -40,7 +48,7 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
     )
     i = 1
     for tree in forest.decision_trees:
-        print(f'{i}')
+        print(f'Tree number {i}')
         tree: Node
         printTree = PrintNode(0)
         tree.accept(printTree)
@@ -258,6 +266,7 @@ if __name__ == '__main__':
         '--log_level',
         default='WARN',
         help='Set log level',
+        choices=['INFO', 'DEBUG', 'WARNING'],
     )
     argcomplete.autocomplete(parser)
     args = parser.parse_args()

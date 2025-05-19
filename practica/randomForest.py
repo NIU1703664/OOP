@@ -74,20 +74,19 @@ class Forest:
         logging.info('{} seconds per tree'.format((t2 - t1) / self.num_trees))
 
     def _make_node(self, dataset: Dataset, depth: int) -> Node:
-        # logging.info(
-        #     f'Creating node in depth {depth} with {dataset.num_samples} samples'
-        # )
+        logging.debug(
+            f'Creating node in depth {depth} with {dataset.num_samples} samples'
+        )
         if (
-            depth == self.max_depth
+            depth >= self.max_depth
             or dataset.num_samples <= self.min_size
             or len(np.unique(dataset.y)) == 1
         ):
-            print(depth, self.max_depth)
+            # logging.info(depth, self.max_depth)
             # last condition is true if all samples belong to the same class
             node = self._make_leaf(dataset)
         else:
             node = self._make_parent_or_leaf(dataset, depth)
-            print(depth, self.max_depth)
         return node
 
     @abstractmethod
