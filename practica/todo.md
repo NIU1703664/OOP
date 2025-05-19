@@ -34,8 +34,10 @@
 
 - [x] Accuracy of regresssion - Dani
 
-- [ ] Put everything in a module and use generics
+- [x] Put everything in a module
+
+- [x] Feature importance - Dani
+
+- [ ] Use generics
 
 - [ ] Update UML - Eric
-
-- [ ] Feature importance - Dani
