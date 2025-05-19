@@ -1,10 +1,7 @@
 from abc import abstractmethod, ABC
 import numpy as np
-from scipy.sparse import data
-from dataset import Dataset
+from .dataset import Dataset
 from typing import override
-
-# import logging
 
 
 class Impurity(ABC):

@@ -4,11 +4,11 @@ import tqdm
 import time
 import numpy.typing as npt
 import multiprocessing
-from typing import Generic, override
+from typing import override
 from numpy.typing import NDArray
-from decisionTree import Leaf, Parent, Node, PrintNode, FeatureImportance
-from dataset import Dataset
-from splitting import Split
+from .decisionTree import Leaf, Parent, Node, PrintNode, FeatureImportance
+from .dataset import Dataset
+from .splitting import Split
 import logging
 
 

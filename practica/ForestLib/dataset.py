@@ -1,4 +1,4 @@
-from typing import Self, TypeVar, Generic
+from typing import Self
 import math
 import numpy as np
 from numpy.matlib import float64
@@ -6,7 +6,6 @@ import pandas as pd
 import sklearn.datasets
 import pickle
 import numpy.typing as npt
-import logging
 
 
 class Dataset:
@@ -41,7 +40,8 @@ class Dataset:
         return ret
 
     def label_average(self) -> np.float64:
-        if self.num_samples == 0: return np.dtype('float64').type(0.0)
+        if self.num_samples == 0:
+            return np.dtype('float64').type(0.0)
         return np.sum(self.y, dtype=float64) / np.dtype('int64').type(
             self.num_samples
         )
