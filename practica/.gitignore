@@ -1,6 +1,4 @@
-datasets/MNIST
-datasets/Credit_card
-datasets/
+ForestLib/datasets
 *.zip
 *.pdf
 *.png

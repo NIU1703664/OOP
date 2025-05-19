@@ -1,10 +1,9 @@
 #!/bin/python3
 # To be able to execute the file standalone
-from randomForest import Classifier, Forest, Regressor
-from dataset import Dataset
-from measure import Impurity, Gini, Entropy, SSE
-from splitting import Split, ExtraSplit, RandomSplit
-from decisionTree import Node, PrintNode, FeatureImportance
+from ForestLib.randomForest import Classifier, Forest, Regressor
+from ForestLib.dataset import Dataset
+from ForestLib.measure import Impurity, Gini, Entropy, SSE
+from ForestLib.splitting import Split, ExtraSplit, RandomSplit
 import numpy as np
 import numpy.typing as npt
 import logging
