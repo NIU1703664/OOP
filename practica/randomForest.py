@@ -6,7 +6,7 @@ import numpy.typing as npt
 import multiprocessing
 from typing import Generic, override
 from numpy.typing import NDArray
-from decisionTree import Leaf, Parent, Node
+from decisionTree import Leaf, Parent, Node, PrintNode, FeatureImportance
 from dataset import Dataset
 from splitting import Split
 import logging
@@ -126,6 +126,20 @@ class Forest:
         self, X: npt.NDArray[np.float64]
     ) -> npt.NDArray[np.float64] | npt.NDArray[np.int64]:
         pass
+
+    def print_trees(self) -> None:
+        i = 1
+        for tree in self.decision_trees:
+            print(f'Tree number {i}')
+            printTree = PrintNode(0)
+            tree.accept(printTree)
+            i += 1
+
+    def feature_importance(self) -> dict[np.int64, int]:
+        feature_visitor = FeatureImportance()
+        for tree in self.decision_trees:
+            tree.accept(feature_visitor)
+        return feature_visitor.occurences
 
 
 class Classifier(Forest):

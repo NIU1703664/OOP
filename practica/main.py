@@ -4,7 +4,7 @@ from randomForest import Classifier, Forest, Regressor
 from dataset import Dataset
 from measure import Impurity, Gini, Entropy, SSE
 from splitting import Split, ExtraSplit, RandomSplit
-from decisionTree import Node, Leaf, Parent, PrintNode
+from decisionTree import Node, PrintNode, FeatureImportance
 import numpy as np
 import numpy.typing as npt
 import logging
@@ -46,13 +46,8 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
     ypred: npt.NDArray[np.int64] | npt.NDArray[np.float64] = forest.predict(
         X_test
     )
-    i = 1
-    for tree in forest.decision_trees:
-        print(f'Tree number {i}')
-        tree: Node
-        printTree = PrintNode(0)
-        tree.accept(printTree)
-        i += 1
+    forest.print_trees()
+    print(forest.feature_importance())
 
     if type(forest) == Regressor:
         assert type(ypred[0]) == np.float64

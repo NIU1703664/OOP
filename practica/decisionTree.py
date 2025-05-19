@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from tokenize import Octnumber
 from typing import override
 import numpy as np
 import numpy.typing as npt
@@ -77,8 +78,29 @@ class PrintNode(NodeVisitor):
     def visitParent(self, node: Parent):
         print(
             '\t' * self.depth,
-            f'parent - {node.feature_index}, {node.threshold}',
+            f'parent - feature index {node.feature_index}, threshold {node.threshold}',
         )
-        deeperVisitor = PrintNode(self.depth + 1)
-        node.left_child.accept(deeperVisitor)
-        node.right_child.accept(deeperVisitor)
+        self.depth += 1
+        node.left_child.accept(self)
+        node.right_child.accept(self)
+        self.depth -= 1
+
+
+class FeatureImportance(NodeVisitor):
+    def __init__(self) -> None:
+        super().__init__()
+        self.occurences: dict[np.int64, int] = {}
+
+    @override
+    def visitLeaf(self, node: Leaf):
+        pass
+
+    @override
+    def visitParent(self, node: Parent):
+        k = node.feature_index
+        if k in self.occurences.keys():
+            self.occurences[k] += 1
+        else:
+            self.occurences[k] = 1
+        node.left_child.accept(self)
+        node.right_child.accept(self)
