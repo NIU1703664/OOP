@@ -18,10 +18,6 @@ class SSE {
   + purity(dataset: Dataset): float
 }
 
-Impurity <|-- Gini
-Impurity <|-- Entropy
-Impurity <|-- SSE
-
 abstract class Split {
   - criterion: Impurity
   {abstract}+ _best_split(features: int[], dataset: Dataset): tuple[int, float, float, list[Dataset]]
@@ -52,13 +48,15 @@ class Dataset {
   + load_temperatures(): Dataset {static}
 }
 
-interface Node {
+abstract class Node {
   {abstract}+ predict(row: float[]): int | float
+  {abstract}+ accept(visitor: NodeVisitor)
 }
 
 class Leaf {
   - label: int | float
   + predict(row: float[]): int | float
+  + accept(visitor: NodeVisitor)
 }
 
 class Parent {
@@ -67,6 +65,24 @@ class Parent {
   - left_child: Node
   - right_child: Node
   + predict(row: float[]): int | float
+  + accept(visitor: NodeVisitor)
+}
+
+abstract class NodeVisitor {
+  {abstract}+ visitLeaf(node: Leaf)
+  {abstract}+ visitParent(node: Parent)
+}
+
+class PrintNode {
+  - depth: int
+  + visitLeaf(node: Leaf)
+  + visitParent(node: Parent)
+}
+
+class FeatureImportance {
+  - occurences: dict[int, int]
+  + visitLeaf(node: Leaf)
+  + visitParent(node: Parent)
 }
 
 abstract class Forest {
@@ -82,6 +98,8 @@ abstract class Forest {
   
   + fit(X: float[][], y: int[] | float[]): void
   {abstract}+ predict(X: float[][]): int[] | float[]
+  + print_trees(): void
+  + feature_importance(): dict[int, int]
   # _make_node(dataset: Dataset, depth: int): Node
   {abstract}# _make_leaf(dataset: Dataset): Leaf
   # _make_parent_or_leaf(dataset: Dataset, depth: int): Node
@@ -99,17 +117,24 @@ class Regressor {
   + predict(X: float[][]): float[]
 }
 
+Impurity <|-- Gini
+Impurity <|-- Entropy
+Impurity <|-- SSE
 Forest <|-- Classifier
 Forest <|-- Regressor
 Forest *-right-> Node : decision_trees
 Forest --> Split : split strategy
 Forest --> Dataset : uses
-Split o--> Impurity : criterion
 Node <|-- Leaf
 Node <|-- Parent
 Parent *-left-> Node
 Parent *-right-> Node
+Split o--> Impurity : criterion
 Split <|-- RandomSplit
 Split <|-- ExtraSplit
-
+NodeVisitor <|-- PrintNode
+NodeVisitor <|-- FeatureImportance
+Leaf ..> NodeVisitor : accepts
+Parent ..> NodeVisitor : accepts
 @enduml
+

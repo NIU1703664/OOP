@@ -40,4 +40,4 @@
 
 - [ ] Use generics
 
-- [ ] Update UML - Eric
+- [x] Update UML - Eric
