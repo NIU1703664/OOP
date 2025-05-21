@@ -4,6 +4,7 @@ from ForestLib.randomForest import Classifier, Forest, Regressor
 from ForestLib.dataset import Dataset
 from ForestLib.measure import Impurity, Gini, Entropy, SSE
 from ForestLib.splitting import Split, ExtraSplit, RandomSplit
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import logging
@@ -11,18 +12,18 @@ import argparse
 import argcomplete
 
 # Hyperparameters small
-# num_trees: int = 84   # number of decision trees
-# max_depth: int = 20   # maximum number of levels of a decision tree
-# min_size_split: int = 5   # if less, do not split a node
-# ratio_samples: float = 0.8   # sampling with replacement
-# ratio_train = 0.7
+num_trees: int = 84   # number of decision trees
+max_depth: int = 20   # maximum number of levels of a decision tree
+min_size_split: int = 5   # if less, do not split a node
+ratio_samples: float = 0.8   # sampling with replacement
+ratio_train = 0.7
 
 # Hyperparameters big
-num_trees: int = 42  # number of decision trees
-max_depth: int = 20   # maximum number of levels of a decision tree
-min_size_split: int = 20   # if less, do not split a node
-ratio_samples: float = 0.4   # sampling with replacement
-ratio_train = 0.7
+# num_trees: int = 42  # number of decision trees
+# max_depth: int = 20   # maximum number of levels of a decision tree
+# min_size_split: int = 20   # if less, do not split a node
+# ratio_samples: float = 0.4   # sampling with replacement
+# ratio_train = 0.7
 
 # Hyperparameters debug
 # num_trees: int = 1  # number of decision trees
@@ -33,35 +34,40 @@ ratio_train = 0.7
 
 
 def benchmark(
-    forest: Forest, dataset: Dataset, verbose: bool
+    forest: Forest,  dataset: tuple[Dataset, Dataset], verbose: bool
 ) -> tuple[float, str]:
-    num_samples_train: int = int(dataset.num_samples * ratio_train)
-    num_samples_test: int = dataset.num_samples - num_samples_train
-    idx = np.random.permutation(range(dataset.num_samples))
-    idx_train = idx[:num_samples_train]
-    idx_test = idx[num_samples_train : num_samples_train + num_samples_test]
-    X_train, y_train = dataset.X[idx_train], dataset.y[idx_train]
-    X_test, y_test = dataset.X[idx_test], dataset.y[idx_test]
-
-    forest.fit(X_train, y_train)
+    train_db, test_db= dataset
+    forest.fit(train_db.X, train_db.y)
     ypred: npt.NDArray[np.int64] | npt.NDArray[np.float64] = forest.predict(
-        X_test
+        test_db.X
     )
     if verbose:
         forest.print_trees()
-        forest.featureGraph(dataset.title)
+        forest.featureGraph(test_db.title)
 
     if type(forest) == Regressor:
         assert type(ypred[0]) == np.float64
+        plt.figure()
+        x = range(len(test_db.X))
+        for t, y1, y2 in zip(x, test_db.y, ypred):
+            plt.plot([t, t], [y1, y2], 'k-')
+        plt.plot([x[0], x[0]], [test_db.y[0], ypred[0]], 'k-', label='error')
+        plt.plot(x, test_db.y, 'g.', label='test')
+        plt.plot(x, ypred, 'y.', label='prediction')
+        plt.xlabel('day in last 2 years')
+        plt.ylabel('min. daily temperature')
+        plt.legend()
+        plt.savefig('figures/FeatureImportance_temperatures.png')
+
         accuracy: float = np.sqrt(
-            np.sum((ypred - y_test) ** 2) / num_samples_test
+            np.sum((ypred - test_db.y) ** 2) / len(test_db.y)
         )
         result_str: str = f'{(accuracy):2.1f} rmse'
 
     else:
         assert type(ypred[0]) == np.int64
-        hits: int = np.sum(ypred == y_test)
-        accuracy: float = hits / float(num_samples_test)
+        hits: int = np.sum(ypred == test_db.y)
+        accuracy: float = hits / float(len(test_db.y))
         result_str: str = f'{(100*accuracy):2.1f}%'
     return (forest.time, result_str)
 
@@ -71,11 +77,11 @@ def test_single(
     criterion: Impurity,
     arch: str,
     parallel: bool,
-    dataset: Dataset,
+    dataset: tuple[Dataset, Dataset],
     print_trees: bool,
 ):
     num_random_features: int = int(
-        np.sqrt(dataset.num_features)
+        np.sqrt(dataset[0].num_features)
     )   # This number is not chosen at random but represents the number of features to choose at random
     split: Split
     match arch:
@@ -196,17 +202,17 @@ def main(
     )
     logging.info('Starting the program')
     logging.info(f'Attemtping to load {dataset}:')
-    data: Dataset
+    data: tuple[Dataset, Dataset]
     forest: type[Forest] = Classifier
     match dataset:
         case 'sonar':
-            data = Dataset.load_sonar()
+            data = Dataset.load_sonar(ratio_train)
             logging.info(f'Sonar database loaded')
         case 'iris':
-            data = Dataset.load_iris()
+            data = Dataset.load_iris(ratio_train)
             logging.info(f'Iris database loaded')
         case 'mnist':
-            data = Dataset.load_MNIST()
+            data = Dataset.load_MNIST(ratio_train)
             logging.info(f'MNIST database loaded')
         case 'temperatures':
             data = Dataset.load_temperatures()

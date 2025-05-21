@@ -86,8 +86,23 @@ class Dataset:
             type(self)(np.array(right_X), right_y),
         )
 
+    def test_split(self, ratio_train: float) -> tuple[Self, Self]:
+        num_samples_train: int = int(self.num_samples * ratio_train)
+        num_samples_test: int = self.num_samples - num_samples_train
+        idx = np.random.permutation(range(self.num_samples))
+        idx_train = idx[:num_samples_train]
+        idx_test = idx[
+            num_samples_train : num_samples_train + num_samples_test
+        ]
+        X_train, y_train = self.X[idx_train], self.y[idx_train]
+        X_test, y_test = self.X[idx_test], self.y[idx_test]
+        return (
+            type(self)(np.array(X_train), y_train),
+            type(self)(np.array(X_test), y_test),
+        )
+
     @classmethod
-    def load_sonar(cls) -> Self:
+    def load_sonar(cls, ratio_train: float) -> tuple[Self, Self]:
         df = pd.read_csv('./datasets/Sonar/sonar.all-data.csv', header=None)
 
         X: npt.NDArray[np.float64] = df[df.columns[:-1]].to_numpy(
@@ -102,11 +117,13 @@ class Dataset:
         )   # M = mine, R = rock
 
         current = cls(X, y)
-        current.title = 'sonar'
-        return current
+        train, test = current.test_split(ratio_train)
+        train.title = 'sonar'
+        test.title = 'sonar'
+        return (train, test)
 
     @classmethod
-    def load_iris(cls) -> Self:
+    def load_iris(cls, ratio_train: float) -> tuple[Self, Self]:
         X: npt.NDArray[np.float64]
         y: npt.NDArray[np.int64]
         X, y = sklearn.datasets.load_iris(return_X_y=True)
@@ -114,11 +131,13 @@ class Dataset:
         # labels: npt.NDArray[np.int64] = np.unique(y)
 
         current = cls(X, y)
-        current.title = 'iris'
-        return current
+        train, test = current.test_split(ratio_train)
+        train.title = 'iris'
+        test.title = 'iris'
+        return (train, test)
 
     @classmethod
-    def load_MNIST(cls) -> Self:
+    def load_MNIST(cls, ratio_train: float) -> tuple[Self, Self]:
         with open('./datasets/MNIST/mnist.pkl', 'rb') as f:
             mnist = pickle.load(f, encoding='byte')
 
@@ -132,11 +151,13 @@ class Dataset:
         )
 
         current = cls(images, labels)
-        current.title = 'mnist'
-        return current
+        train, test = current.test_split(ratio_train)
+        train.title = 'mnist'
+        test.title = 'mnist'
+        return (train, test)
 
     @classmethod
-    def load_temperatures(cls) -> Self:
+    def load_temperatures(cls) -> tuple[Self, Self]:
         df = pd.read_csv(
             'https://raw.githubusercontent.com/jbrownlee/'
             'Datasets/master/daily-min-temperatures.csv'
@@ -145,11 +166,14 @@ class Dataset:
         month: np.int64 = pd.DatetimeIndex(df.Date).month.to_numpy()   # 1...12
         year: np.int64 = pd.DatetimeIndex(
             df.Date
-        ).year.to_numpy()   # 1981...1999
+        ).year.to_numpy()   # 1981...1990
+        train_indeces = np.where(year < 1989)
+        test_indeces = np.where(year >= 1989)
         X: npt.NDArray[np.int64] = np.vstack(
             [day, month, year]
         ).T   # np array of 3 columns
         y: npt.NDArray[np.float64] = df.Temp.to_numpy()
-        current = cls(X, y)
-        current.title = 'temperatures'
-        return current
+        train, test = cls(X[train_indeces], y[train_indeces]), cls(X[test_indeces], y[test_indeces])
+        train.title = 'temperatures'
+        test.title = 'temperatures'
+        return (train, test)

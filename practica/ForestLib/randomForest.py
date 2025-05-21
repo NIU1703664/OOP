@@ -153,14 +153,14 @@ class Forest:
             plt.colorbar()
             plt.xlabel('Horizontal Pixels')
             plt.ylabel('Vertical Pixels')
-            plt.savefig('FeatureImportance_MNIST.png')
+            plt.savefig('figures/FeatureImportance_MNIST.png')
         else:
             x = np.array(list(occurrences.keys()))
             y = np.array(list(occurrences.values()))
             plt.figure(), plt.bar(x, y)
             plt.xlabel('feature')
             plt.ylabel('occurrences')
-            plt.savefig(f'FeatureImportance_{title}.png')
+            plt.savefig(f'figures/FeatureImportance_{title}.png')
 
 
 class Classifier(Forest):
