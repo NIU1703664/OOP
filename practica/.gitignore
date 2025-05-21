@@ -1,6 +1,4 @@
 datasets
 *.zip
-*.pdf
-*.png
 
 __pycache__

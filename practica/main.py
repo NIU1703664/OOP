@@ -11,18 +11,18 @@ import argparse
 import argcomplete
 
 # Hyperparameters small
-num_trees: int = 84   # number of decision trees
-max_depth: int = 20   # maximum number of levels of a decision tree
-min_size_split: int = 5   # if less, do not split a node
-ratio_samples: float = 0.8   # sampling with replacement
-ratio_train = 0.7
+# num_trees: int = 84   # number of decision trees
+# max_depth: int = 20   # maximum number of levels of a decision tree
+# min_size_split: int = 5   # if less, do not split a node
+# ratio_samples: float = 0.8   # sampling with replacement
+# ratio_train = 0.7
 
 # Hyperparameters big
-# num_trees: int = 42  # number of decision trees
-# max_depth: int = 20   # maximum number of levels of a decision tree
-# min_size_split: int = 20   # if less, do not split a node
-# ratio_samples: float = 0.4   # sampling with replacement
-# ratio_train = 0.7
+num_trees: int = 42  # number of decision trees
+max_depth: int = 20   # maximum number of levels of a decision tree
+min_size_split: int = 20   # if less, do not split a node
+ratio_samples: float = 0.4   # sampling with replacement
+ratio_train = 0.7
 
 # Hyperparameters debug
 # num_trees: int = 1  # number of decision trees
@@ -32,7 +32,9 @@ ratio_train = 0.7
 # ratio_train = 0.7
 
 
-def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
+def benchmark(
+    forest: Forest, dataset: Dataset, verbose: bool
+) -> tuple[float, str]:
     num_samples_train: int = int(dataset.num_samples * ratio_train)
     num_samples_test: int = dataset.num_samples - num_samples_train
     idx = np.random.permutation(range(dataset.num_samples))
@@ -45,8 +47,9 @@ def benchmark(forest: Forest, dataset: Dataset) -> tuple[float, str]:
     ypred: npt.NDArray[np.int64] | npt.NDArray[np.float64] = forest.predict(
         X_test
     )
-    forest.print_trees()
-    print(forest.feature_importance())
+    if verbose:
+        forest.print_trees()
+        forest.featureGraph(dataset.mnist)
 
     if type(forest) == Regressor:
         assert type(ypred[0]) == np.float64
@@ -69,6 +72,7 @@ def test_single(
     arch: str,
     parallel: bool,
     dataset: Dataset,
+    print_trees: bool,
 ):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
@@ -94,11 +98,17 @@ def test_single(
             parallel,
         ),
         dataset,
+        print_trees,
     )
     print(f'Time: {time:2.3f}s, Accuracy: {acc}')
 
 
-def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
+def test_all(
+    forest: type[Forest],
+    measure: Impurity,
+    dataset: Dataset,
+    print_trees: bool,
+):
     num_random_features: int = int(
         np.sqrt(dataset.num_features)
     )   # This number is not
@@ -114,6 +124,7 @@ def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
             False,
         ),
         dataset,
+        print_trees,
     )
     pr_time, pr_acc = benchmark(
         forest(
@@ -126,6 +137,7 @@ def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
             True,
         ),
         dataset,
+        print_trees,
     )
     se_time, se_acc = benchmark(
         forest(
@@ -138,6 +150,7 @@ def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
             False,
         ),
         dataset,
+        print_trees,
     )
     pe_time, pe_acc = benchmark(
         forest(
@@ -150,6 +163,7 @@ def test_all(forest: type[Forest], measure: Impurity, dataset: Dataset):
             True,
         ),
         dataset,
+        print_trees,
     )
     print('')
     print('                   Sequential    |     parallel   ')
@@ -169,6 +183,7 @@ def main(
     full_benchmark: bool,
     log_level: str,
     parallel: bool,
+    print_trees: bool,
 ):
     log_levels = {
         'INFO': logging.INFO,
@@ -214,10 +229,10 @@ def main(
 
     if full_benchmark:
         logging.info(f'Starting a complete benchmark')
-        test_all(forest, criterion, data)
+        test_all(forest, criterion, data, print_trees)
     else:
         logging.info(f'Testing {arch} with {parallel} computing')
-        test_single(forest, criterion, arch, parallel, data)
+        test_single(forest, criterion, arch, parallel, data, print_trees)
 
 
 if __name__ == '__main__':
@@ -253,6 +268,11 @@ if __name__ == '__main__':
     )
     _ = parser.add_argument(
         '--full_benchmark',
+        action='store_true',
+        help='Compare in a table all parallelization and architecture options, overrides --parallel and --arch',
+    )
+    _ = parser.add_argument(
+        '--print_trees',
         action='store_true',
         help='Compare in a table all parallelization and architecture options, overrides --parallel and --arch',
     )

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import matplotlib.pyplot as plt
 import numpy as np
 import tqdm
 import time
@@ -140,6 +141,28 @@ class Forest:
         for tree in self.decision_trees:
             tree.accept(feature_visitor)
         return feature_visitor.occurences
+
+    def featureGraph(self, mnist: bool):
+        occurrences = self.feature_importance()
+        if not mnist:
+            x = np.array(list(occurrences.keys()))
+            y = np.array(list(occurrences.values()))
+            plt.figure(), plt.bar(x, y)
+            plt.xlabel('feature')
+            plt.ylabel('occurrences')
+            plt.title(
+                'Sonar feature importance\n{} trees'.format(self.num_trees)
+            )
+            plt.savefig('FeatureImportanceBars.png')
+        else:
+            ima = np.zeros(28 * 28)
+            for k in occurrences.keys():
+                ima[k] = occurrences[k]
+            plt.figure()
+            plt.imshow(np.reshape(ima, (28, 28)))
+            plt.colorbar()
+            plt.title('Feature importance MNIST')
+            plt.savefig('FeatureImportanceMNIST.png')
 
 
 class Classifier(Forest):

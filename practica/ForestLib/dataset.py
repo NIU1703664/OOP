@@ -22,6 +22,7 @@ class Dataset:
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features = self.X.shape
+        self.mnist: bool = False
 
     def random_sampling(self, ratio_samples: float) -> Self:
         n: int = math.floor(self.num_samples * ratio_samples)
@@ -126,7 +127,9 @@ class Dataset:
             np.array(mnist['training_labels']), np.array(mnist['test_labels'])
         )
 
-        return cls(images, labels)
+        current = cls(images, labels)
+        current.mnist = True
+        return current
 
     @classmethod
     def load_temperatures(cls) -> Self:

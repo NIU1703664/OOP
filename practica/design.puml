@@ -124,12 +124,12 @@ Forest <|-- Classifier
 Forest <|-- Regressor
 Forest *-right-> Node : decision_trees
 Forest --> Split : split strategy
-Forest --> Dataset : uses
+Forest -left-> Dataset : uses
 Node <|-- Leaf
 Node <|-- Parent
 Parent *-left-> Node
 Parent *-right-> Node
-Split o--> Impurity : criterion
+Split o-left-> Impurity : criterion
 Split <|-- RandomSplit
 Split <|-- ExtraSplit
 NodeVisitor <|-- PrintNode
