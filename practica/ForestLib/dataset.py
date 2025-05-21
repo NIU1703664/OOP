@@ -22,7 +22,7 @@ class Dataset:
         self.num_samples: int
         self.num_features: int
         self.num_samples, self.num_features = self.X.shape
-        self.mnist: bool = False
+        self.title: str = ''
 
     def random_sampling(self, ratio_samples: float) -> Self:
         n: int = math.floor(self.num_samples * ratio_samples)
@@ -101,7 +101,9 @@ class Dataset:
             list(map(lambda x: np.int64(x == 'M'), y))
         )   # M = mine, R = rock
 
-        return cls(X, y)
+        current = cls(X, y)
+        current.title = 'sonar'
+        return current
 
     @classmethod
     def load_iris(cls) -> Self:
@@ -111,7 +113,9 @@ class Dataset:
 
         # labels: npt.NDArray[np.int64] = np.unique(y)
 
-        return cls(X, y)
+        current = cls(X, y)
+        current.title = 'iris'
+        return current
 
     @classmethod
     def load_MNIST(cls) -> Self:
@@ -128,7 +132,7 @@ class Dataset:
         )
 
         current = cls(images, labels)
-        current.mnist = True
+        current.title = 'mnist'
         return current
 
     @classmethod
@@ -146,4 +150,6 @@ class Dataset:
             [day, month, year]
         ).T   # np array of 3 columns
         y: npt.NDArray[np.float64] = df.Temp.to_numpy()
-        return cls(X, y)
+        current = cls(X, y)
+        current.title = 'temperatures'
+        return current

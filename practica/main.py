@@ -49,7 +49,7 @@ def benchmark(
     )
     if verbose:
         forest.print_trees()
-        forest.featureGraph(dataset.mnist)
+        forest.featureGraph(dataset.title)
 
     if type(forest) == Regressor:
         assert type(ypred[0]) == np.float64

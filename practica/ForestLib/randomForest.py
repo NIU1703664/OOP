@@ -142,27 +142,25 @@ class Forest:
             tree.accept(feature_visitor)
         return feature_visitor.occurences
 
-    def featureGraph(self, mnist: bool):
+    def featureGraph(self, title: str):
         occurrences = self.feature_importance()
-        if not mnist:
-            x = np.array(list(occurrences.keys()))
-            y = np.array(list(occurrences.values()))
-            plt.figure(), plt.bar(x, y)
-            plt.xlabel('feature')
-            plt.ylabel('occurrences')
-            plt.title(
-                'Sonar feature importance\n{} trees'.format(self.num_trees)
-            )
-            plt.savefig('FeatureImportanceBars.png')
-        else:
+        if title == 'mnist':
             ima = np.zeros(28 * 28)
             for k in occurrences.keys():
                 ima[k] = occurrences[k]
             plt.figure()
             plt.imshow(np.reshape(ima, (28, 28)))
             plt.colorbar()
-            plt.title('Feature importance MNIST')
-            plt.savefig('FeatureImportanceMNIST.png')
+            plt.xlabel('Horizontal Pixels')
+            plt.ylabel('Vertical Pixels')
+            plt.savefig('FeatureImportance_MNIST.png')
+        else:
+            x = np.array(list(occurrences.keys()))
+            y = np.array(list(occurrences.values()))
+            plt.figure(), plt.bar(x, y)
+            plt.xlabel('feature')
+            plt.ylabel('occurrences')
+            plt.savefig(f'FeatureImportance_{title}.png')
 
 
 class Classifier(Forest):
