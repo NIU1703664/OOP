@@ -34,9 +34,9 @@ ratio_train = 0.7
 
 
 def benchmark(
-    forest: Forest,  dataset: tuple[Dataset, Dataset], verbose: bool
+    forest: Forest, dataset: tuple[Dataset, Dataset], verbose: bool
 ) -> tuple[float, str]:
-    train_db, test_db= dataset
+    train_db, test_db = dataset
     forest.fit(train_db.X, train_db.y)
     ypred: npt.NDArray[np.int64] | npt.NDArray[np.float64] = forest.predict(
         test_db.X
@@ -280,7 +280,7 @@ if __name__ == '__main__':
     _ = parser.add_argument(
         '--print_trees',
         action='store_true',
-        help='Compare in a table all parallelization and architecture options, overrides --parallel and --arch',
+        help='Option to print the trees',
     )
     _ = parser.add_argument(
         '--log_level',

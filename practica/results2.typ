@@ -15,8 +15,8 @@
 
 == Min Temperatures
 #figure(
-  caption: "RMSE: ",
-  image("images/die.png", height: 85%)
+  caption: "RMSE: 3.1",
+  image("./figures/FeatureImportance_temperatures.png", height: 85%)
 )
 
 == Iris trees
