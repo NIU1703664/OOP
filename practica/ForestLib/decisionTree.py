@@ -71,13 +71,14 @@ class PrintNode(NodeVisitor):
 
     @override
     def visitLeaf(self, node: Leaf):
-        print('\t' * self.depth, f'leaf, {node.label}')
+        print('|   ' * self.depth, f'leaf, {node.label}', sep='')
 
     @override
     def visitParent(self, node: Parent):
         print(
-            '\t' * self.depth,
+            '|   ' * self.depth,
             f'parent - feature index {node.feature_index}, threshold {node.threshold}',
+            sep='',
         )
         self.depth += 1
         node.left_child.accept(self)

@@ -16,7 +16,7 @@
 == Min Temperatures
 #figure(
   caption: "RMSE: ",
-  image("images/die.png", height: 80%)
+  image("images/die.png", height: 85%)
 )
 
 == Iris trees
@@ -24,12 +24,42 @@
   caption: [Decision trees for Iris],
   grid(
     columns: (auto, auto),
-    gutter: 3pt,
-    align(center)[
-      #image("images/die.png")
+    gutter: 1em,
+    align(left)[
+      #show raw: set text(size: 12pt)
+      ```
+      parent - feature index 3, threshold 1.0
+      |   leaf, 0
+      |   parent - feature index 0, threshold 6.4
+      |   |   parent - feature index 2, threshold 4.9
+      |   |   |   leaf, 1
+      |   |   |   parent - feature index 3, threshold 1.8
+      |   |   |   |   leaf, 1
+      |   |   |   |   leaf, 2
+      |   |   parent - feature index 2, threshold 5.2
+      |   |   |   leaf, 1
+      |   |   |   leaf, 2
+      ```
     ],
     align(center)[
-      #image("images/die.png")
+      #show raw: set text(size: 12pt)
+      ```
+      parent - feature index 0, threshold 5.5
+      |   parent - feature index 2, threshold 3.3
+      |   |   leaf, 0
+      |   |   leaf, 1
+      |   parent - feature index 0, threshold 6.4
+      |   |   parent - feature index 3, threshold 1.8
+      |   |   |   parent - feature index 3, threshold 1.0
+      |   |   |   |   leaf, 0
+      |   |   |   |   parent - feature index 2, threshold 5.6
+      |   |   |   |   |   leaf, 1
+      |   |   |   |   |   leaf, 2
+      |   |   |   leaf, 2
+      |   |   parent - feature index 3, threshold 1.8
+      |   |   |   leaf, 1
+      |   |   |   leaf, 2
+      ```
     ]
   ),
 )
@@ -41,13 +71,13 @@
   align(center)[
     #figure(
       caption: "Feature importance for Iris",
-      image("images/die.png")
+      image("./figures/FeatureImportanceBarsIris.png")
     )
   ],
   align(center)[
     #figure(
       caption: "Feature importance for Sonar",
-      image("images/die.png")
+      image("./figures/FeatureImportanceBarsSonar.png")
     )
   ]
 )
@@ -55,5 +85,5 @@
 == Feature importance MNIST
 #figure(
   caption: "Feature importance for MNIST",
-  image("images/die.png", height: 80%)
+  image("./figures/FeatureImportanceMNIST.png", height: 85%)
 )
