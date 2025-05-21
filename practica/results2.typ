@@ -71,13 +71,13 @@
   align(center)[
     #figure(
       caption: "Feature importance for Iris",
-      image("./figures/FeatureImportanceBarsIris.png")
+      image("./figures/FeatureImportance_iris.png")
     )
   ],
   align(center)[
     #figure(
       caption: "Feature importance for Sonar",
-      image("./figures/FeatureImportanceBarsSonar.png")
+      image("./figures/FeatureImportance_sonar.png")
     )
   ]
 )
@@ -85,5 +85,5 @@
 == Feature importance MNIST
 #figure(
   caption: "Feature importance for MNIST",
-  image("./figures/FeatureImportanceMNIST.png", height: 85%)
+  image("./figures/FeatureImportance_MNIST.png", height: 85%)
 )
